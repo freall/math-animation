@@ -5,9 +5,12 @@
     <title>容斥原理 - 数学动画教学</title>
     <script>
       // SPA fallback: redirect to index.html preserving the path
-      var path = window.location.pathname.replace('/math-animation', '');
-      if (path !== '/' && !path.match(/\.\w+$/)) {
-        window.location.replace('/math-animation/');
+      var pathname = window.location.pathname;
+      var isProjectPath = pathname.indexOf('/math-animation/') === 0;
+      var base = isProjectPath ? '/math-animation/' : '/';
+      var normalized = isProjectPath ? pathname.replace('/math-animation', '') : pathname;
+      if (normalized !== '/' && !normalized.match(/\.\w+$/)) {
+        window.location.replace(base);
       }
     </script>
   </head>
