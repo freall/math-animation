@@ -238,11 +238,10 @@ const GridDiagram = ({
   segmentBoxes?: { r1: number, c1: number, r2: number, c2: number, color: string }[],
   specialPoints?: { r: number, c: number, label: string, color?: string }[],
 }) => {
-  const cellW = 56, cellH = 56
-  // 留出标签空间
-  const padLeft = 36, padRight = 36, padTop = 36, padBottom = 36
-  const w = cols * cellW + padLeft + padRight
-  const h = rows * cellH + padTop + padBottom
+  const gap = 62
+  const padLeft = 48, padRight = 48, padTop = 48, padBottom = 48
+  const w = (cols - 1) * gap + padLeft + padRight
+  const h = (rows - 1) * gap + padTop + padBottom
 
   const sRow = startPos ? startPos[0] : rows - 1
   const sCol = startPos ? startPos[1] : 0
@@ -252,54 +251,60 @@ const GridDiagram = ({
   const forbiddenSet = new Set(forbidden?.map(([r, c]) => `${r},${c}`))
   const highlightSet = new Set(highlightCells?.map(([r, c]) => `${r},${c}`))
 
-  // 判断某格是否存在（null = 不存在）
-  const cellExists = (r: number, c: number) => {
+  const pointExists = (r: number, c: number) => {
     if (!numbers) return true
     return numbers[r]?.[c] !== null
   }
 
+  const px = (c: number) => padLeft + c * gap
+  const py = (r: number) => padTop + r * gap
+
   return (
     <div className="grid-container">
-      <svg viewBox={`0 0 ${w} ${h}`} className="grid-svg">
-        {/* 分段框（必过某点用） */}
+      <svg
+        viewBox={`0 0 ${w} ${h}`}
+        width={w}
+        height={h}
+        preserveAspectRatio="xMidYMid meet"
+        className="grid-svg"
+      >
         {segmentBoxes?.map((box, i) => (
           <rect
             key={`seg${i}`}
-            x={padLeft + box.c1 * cellW - 3}
-            y={padTop + box.r1 * cellH - 3}
-            width={(box.c2 - box.c1) * cellW + 6}
-            height={(box.r2 - box.r1) * cellH + 6}
+            x={px(box.c1) - 10}
+            y={py(box.r1) - 10}
+            width={(box.c2 - box.c1 - 1) * gap + 20}
+            height={(box.r2 - box.r1 - 1) * gap + 20}
             fill="none"
             stroke={box.color}
-            strokeWidth="3"
-            strokeDasharray="6,3"
+            strokeWidth="2.5"
             rx="4"
           />
         ))}
 
-        {/* 只画存在格子的网格线 */}
-        {Array.from({ length: rows }, (_, r) =>
-          Array.from({ length: cols }, (_, c) => {
-            if (!cellExists(r, c)) return null
-            const x = padLeft + c * cellW, y = padTop + r * cellH
-            const lines = []
-            // 上边线
-            lines.push(<line key={`t${r},${c}`} x1={x} y1={y} x2={x + cellW} y2={y} stroke="#94a3b8" strokeWidth="1.5" />)
-            // 下边线
-            lines.push(<line key={`b${r},${c}`} x1={x} y1={y + cellH} x2={x + cellW} y2={y + cellH} stroke="#94a3b8" strokeWidth="1.5" />)
-            // 左边线
-            lines.push(<line key={`l${r},${c}`} x1={x} y1={y} x2={x} y2={y + cellH} stroke="#94a3b8" strokeWidth="1.5" />)
-            // 右边线
-            lines.push(<line key={`r${r},${c}`} x1={x + cellW} y1={y} x2={x + cellW} y2={y + cellH} stroke="#94a3b8" strokeWidth="1.5" />)
-            return lines
+        {Array.from({ length: rows - 1 }, (_, r) =>
+          Array.from({ length: cols - 1 }, (_, c) => {
+            if (!pointExists(r, c) || !pointExists(r, c + 1) || !pointExists(r + 1, c) || !pointExists(r + 1, c + 1)) {
+              return null
+            }
+            return (
+              <rect
+                key={`cell${r},${c}`}
+                x={px(c)}
+                y={py(r)}
+                width={gap}
+                height={gap}
+                fill="white"
+                stroke="#111827"
+                strokeWidth="2.6"
+              />
+            )
           })
         )}
 
-        {/* 格子内容 */}
         {Array.from({ length: rows }, (_, r) =>
           Array.from({ length: cols }, (_, c) => {
-            if (!cellExists(r, c)) return null
-            const x = padLeft + c * cellW, y = padTop + r * cellH
+            if (!pointExists(r, c)) return null
             const key = `${r},${c}`
             const isForbidden = forbiddenSet.has(key)
             const isHighlight = highlightSet.has(key)
@@ -308,59 +313,66 @@ const GridDiagram = ({
             const isEnd = r === eRow && c === eCol
 
             const handleClick = () => {
-              if (interactive && onCellClick && !isForbidden && !isStart && !isEnd) {
+              if (interactive && onCellClick && !isForbidden) {
                 onCellClick(r, c)
               }
             }
 
-            // 背景色
-            let fill = 'white'
-            if (isForbidden) fill = '#fecaca'
-            else if (isStart) fill = '#bbf7d0'
-            else if (isEnd) fill = '#bfdbfe'
-            else if (isHighlight) fill = '#fef08a'
+            const pointX = px(c)
+            const pointY = py(r)
 
             return (
               <g key={key}>
-                <rect
-                  x={x} y={y} width={cellW} height={cellH}
-                  fill={fill}
-                  stroke="none"
-                  style={{ cursor: interactive && !isForbidden && !isStart && !isEnd ? 'pointer' : 'default' }}
-                  onClick={handleClick}
-                />
-                {/* 禁止标记 */}
+                <circle cx={pointX} cy={pointY} r={isStart || isEnd ? 7.5 : 4} fill={isForbidden ? '#ef4444' : '#111827'} />
+                {interactive && (
+                  <circle
+                    cx={pointX}
+                    cy={pointY}
+                    r={14}
+                    fill="transparent"
+                    style={{ cursor: !isForbidden ? 'pointer' : 'default' }}
+                    onClick={handleClick}
+                  />
+                )}
+                {isHighlight && (
+                  <circle
+                    cx={pointX}
+                    cy={pointY}
+                    r={10}
+                    fill="none"
+                    stroke="#f59e0b"
+                    strokeWidth="2"
+                  />
+                )}
                 {isForbidden && (
-                  <text x={x + cellW / 2} y={y + cellH / 2 + 7} textAnchor="middle" fontSize="22" fill="#ef4444" fontWeight="bold">×</text>
+                  <text x={pointX} y={pointY - 10} textAnchor="middle" fontSize="24" fill="#ef4444" fontWeight="bold">×</text>
                 )}
-                {/* 起点标签（格子内，只显示短标签） */}
-                {isStart && (
-                  <text x={x + cellW / 2} y={y + cellH / 2 + 8} textAnchor="middle" fontSize="18" fontWeight="bold" fill="#16a34a">
-                    {startLabel.length <= 2 ? startLabel : '起'}
-                  </text>
-                )}
-                {/* 终点标签（格子内，只显示短标签） */}
-                {isEnd && (
-                  <text x={x + cellW / 2} y={y + cellH / 2 + 8} textAnchor="middle" fontSize="18" fontWeight="bold" fill="#2563eb">
-                    {endLabel.length <= 2 ? endLabel : '终'}
-                  </text>
-                )}
-                {/* 数字 */}
-                {num !== null && num !== undefined && !isForbidden && !isStart && !isEnd && (
+                {num !== null && num !== undefined && !isForbidden && (
                   <text
-                    x={x + cellW / 2}
-                    y={y + cellH / 2 + 8}
+                    x={pointX + 12}
+                    y={pointY - 10}
                     textAnchor="middle"
-                    fontSize={num >= 100 ? "16" : "20"}
+                    fontSize={num >= 100 ? "16" : "18"}
                     fontWeight="bold"
-                    fill={isHighlight ? '#ca8a04' : '#6366f1'}
+                    fill="#111827"
                   >{num}</text>
                 )}
-                {/* 特殊点标记（如C点） */}
+                {isStart && (
+                  <text x={pointX - 8} y={pointY + 28} textAnchor="middle" fontSize="24" fontStyle="italic" fontWeight="bold" fill="#111827">
+                    {startLabel}
+                  </text>
+                )}
+                {isEnd && (
+                  <text x={pointX + 16} y={pointY - 12} textAnchor="middle" fontSize="24" fontStyle="italic" fontWeight="bold" fill="#111827">
+                    {endLabel}
+                  </text>
+                )}
                 {specialPoints?.find(p => p.r === r && p.c === c) && (() => {
                   const sp = specialPoints.find(p => p.r === r && p.c === c)!
                   return (
-                    <text x={x + cellW - 10} y={y + 14} textAnchor="middle" fontSize="13" fontWeight="bold" fill={sp.color || '#ec4899'}>{sp.label}</text>
+                    <text x={pointX + 4} y={pointY - 14} textAnchor="middle" fontSize="30" fontStyle="italic" fontWeight="bold" fill={sp.color || '#ec4899'}>
+                      {sp.label}
+                    </text>
                   )
                 })()}
               </g>
@@ -368,28 +380,33 @@ const GridDiagram = ({
           })
         )}
 
-        {/* 起点标签（格子外，长标签时显示完整名称） */}
-        {startLabel.length > 2 && (
-          <text
-            x={padLeft + sCol * cellW + cellW / 2}
-            y={padTop + sRow * cellH + cellH + 20}
-            textAnchor="middle"
-            fontSize="13"
-            fontWeight="bold"
-            fill="#16a34a"
-          >{startLabel}</text>
-        )}
-
-        {/* 终点标签（格子外，长标签时显示完整名称） */}
-        {endLabel.length > 2 && (
-          <text
-            x={padLeft + eCol * cellW + cellW / 2}
-            y={padTop + eRow * cellH - 8}
-            textAnchor="middle"
-            fontSize="13"
-            fontWeight="bold"
-            fill="#2563eb"
-          >{endLabel}</text>
+        {(startLabel.length > 2 || endLabel.length > 2) && (
+          <g>
+            {startLabel.length > 2 && (
+              <text
+                x={px(sCol)}
+                y={py(sRow) + 36}
+                textAnchor="middle"
+                fontSize="18"
+                fontWeight="bold"
+                fill="#111827"
+              >
+                {startLabel}
+              </text>
+            )}
+            {endLabel.length > 2 && (
+              <text
+                x={px(eCol)}
+                y={py(eRow) - 20}
+                textAnchor="middle"
+                fontSize="18"
+                fontWeight="bold"
+                fill="#111827"
+              >
+                {endLabel}
+              </text>
+            )}
+          </g>
         )}
       </svg>
     </div>

@@ -398,6 +398,8 @@ body {
   display: flex;
   justify-content: center;
   margin: 30px 0;
+  width: 100%;
+  overflow-x: auto;
 }
 
 .venn-container {
@@ -1170,12 +1172,18 @@ body {
 .grid-container {
   display: flex;
   justify-content: center;
+  align-items: center;
   margin: 25px 0;
+  width: 100%;
+  min-height: 300px;
 }
 
 .grid-svg {
+  display: block;
+  width: min(100%, 560px);
   max-width: 100%;
   height: auto;
+  flex-shrink: 0;
 }
 
 .cell-appear {
