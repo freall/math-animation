@@ -1,61 +1,65 @@
----
-AIGC:
-    ContentProducer: Minimax Agent AI
-    ContentPropagator: Minimax Agent AI
-    Label: AIGC
-    ProduceID: "00000000000000000000000000000000"
-    PropagateID: "00000000000000000000000000000000"
-    ReservedCode1: 3046022100fc6643ce6eee921f07e29efe50d198f0231b619105b3b80b4af2b9dda9d7cd35022100b946fd9388fdfeb77389f9afa3790c1c03f0bb17818fad0d1cfa2a0f62668b6a
-    ReservedCode2: 3045022100fd845769aa879924e1cf186c7333a0b4318e240cf42caae4a03590e5bf7543de02204785206668e527ed185a18fa4cbf38d978829c18612a428218212872af0e8825
----
+# 容斥原理 - 数学动画教学
 
-# React + TypeScript + Vite
+面向小学三年级学生的交互式数学动画教学程序，通过生动的动画和可视化帮助学生理解**容斥原理**。
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 功能特性
 
-Currently, two official plugins are available:
+- **互动式学习流程**：从概念引入到公式推导，循序渐进
+- **韦恩图可视化**：动态展示两集合、三集合的重叠关系
+- **步骤式公式讲解**：点击逐步揭示解题思路
+- **即时练习反馈**：内置练习题，提交后即时判断对错
+- **进度追踪**：底部进度条实时显示学习进度
+- **丰富动画效果**：淡入、弹跳、脉冲等动画增强学习体验
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 学习内容
 
-## Expanding the ESLint configuration
+| 页面 | 内容 |
+|------|------|
+| 首页 | 欢迎引导，激发学习兴趣 |
+| 概念引入 | 以运动会为例引入容斥问题 |
+| 韦恩图 | 讲解韦恩图的含义和阅读方法 |
+| 二量容斥 | 公式 `A + B - AB` 及例题 |
+| 三量容斥 | 公式 `A + B + C - AB - AC - BC + ABC` 及例题 |
+| 练习 | 交互式练习题，即时反馈 |
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## 技术栈
 
-- Configure the top-level `parserOptions` property like this:
+- **React 18** + **TypeScript**
+- **Vite** 构建工具
+- **Tailwind CSS** 样式框架
+- **CSS 动画** 实现交互效果
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 快速开始
+
+```bash
+# 安装依赖
+pnpm install
+
+# 启动开发服务器
+pnpm dev
+
+# 构建生产版本
+pnpm build
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## 项目结构
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
 ```
+src/
+├── App.tsx              # 主应用组件（所有页面逻辑）
+├── App.css              # 样式（动画、布局、响应式）
+├── index.css            # 全局样式与 Tailwind 配置
+├── main.tsx             # 应用入口
+└── components/
+    └── ErrorBoundary.tsx  # 错误边界组件
+```
+
+## 核心组件
+
+| 组件 | 说明 |
+|------|------|
+| `VennDiagram` | SVG 韦恩图，支持动画和数据标注 |
+| `FadeIn` | 淡入动画组件 |
+| `Bounce` | 弹跳动画组件 |
+| `AnimatedCounter` | 数字计数动画 |
+| `FormulaBox` | 公式展示卡片 |
