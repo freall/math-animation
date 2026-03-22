@@ -209,229 +209,791 @@ const PracticePage = ({ onBack, onHome }: { onBack: () => void, onHome: () => vo
 }
 
 // ========== 标数法模块 ==========
-const GridDiagram = ({ rows, cols, numbers, forbidden, startLabel, endLabel, animated, highlightCells }: {
-  rows: number, cols: number, numbers?: (number | null)[][], forbidden?: [number, number][],
-  startLabel?: string, endLabel?: string, animated?: boolean, highlightCells?: [number, number][]
+// GridDiagram: 通用网格标数法图示组件
+// - numbers[r][c]: null 表示该格不存在（特殊形状），undefined 表示空白
+// - forbidden: 禁止经过的格子坐标 [r,c]
+// - startPos/endPos: 起点/终点坐标，默认左下/右上
+// - startLabel/endLabel: 起点/终点标签
+// - segmentBox: 必过某点时的分段框 {r1,c1,r2,c2}[]
+// - specialPoints: 特殊标记点 {r,c,label,color}[]
+const GridDiagram = ({
+  rows, cols, numbers, forbidden,
+  startPos, endPos,
+  startLabel = 'A', endLabel = 'B',
+  animated, highlightCells,
+  onCellClick, interactive = false,
+  segmentBoxes,
+  specialPoints,
+}: {
+  rows: number, cols: number,
+  numbers?: (number | null | undefined)[][],
+  forbidden?: [number, number][],
+  startPos?: [number, number],
+  endPos?: [number, number],
+  startLabel?: string, endLabel?: string,
+  animated?: boolean,
+  highlightCells?: [number, number][],
+  onCellClick?: (row: number, col: number) => void,
+  interactive?: boolean,
+  segmentBoxes?: { r1: number, c1: number, r2: number, c2: number, color: string }[],
+  specialPoints?: { r: number, c: number, label: string, color?: string }[],
 }) => {
-  const cellW = 50, cellH = 50, pad = 40
-  const w = cols * cellW + pad * 2, h = rows * cellH + pad * 2
+  const cellW = 56, cellH = 56
+  // 留出标签空间
+  const padLeft = 36, padRight = 36, padTop = 36, padBottom = 36
+  const w = cols * cellW + padLeft + padRight
+  const h = rows * cellH + padTop + padBottom
+
+  const sRow = startPos ? startPos[0] : rows - 1
+  const sCol = startPos ? startPos[1] : 0
+  const eRow = endPos ? endPos[0] : 0
+  const eCol = endPos ? endPos[1] : cols - 1
+
   const forbiddenSet = new Set(forbidden?.map(([r, c]) => `${r},${c}`))
   const highlightSet = new Set(highlightCells?.map(([r, c]) => `${r},${c}`))
+
+  // 判断某格是否存在（null = 不存在）
+  const cellExists = (r: number, c: number) => {
+    if (!numbers) return true
+    return numbers[r]?.[c] !== null
+  }
 
   return (
     <div className="grid-container">
       <svg viewBox={`0 0 ${w} ${h}`} className="grid-svg">
-        {/* 网格线 */}
-        {Array.from({ length: rows + 1 }, (_, i) => (
-          <line key={`h${i}`} x1={pad} y1={pad + i * cellH} x2={pad + cols * cellW} y2={pad + i * cellH} stroke="#cbd5e1" strokeWidth="1" />
-        ))}
-        {Array.from({ length: cols + 1 }, (_, i) => (
-          <line key={`v${i}`} x1={pad + i * cellW} y1={pad} x2={pad + i * cellW} y2={pad + rows * cellH} stroke="#cbd5e1" strokeWidth="1" />
+        {/* 分段框（必过某点用） */}
+        {segmentBoxes?.map((box, i) => (
+          <rect
+            key={`seg${i}`}
+            x={padLeft + box.c1 * cellW - 3}
+            y={padTop + box.r1 * cellH - 3}
+            width={(box.c2 - box.c1) * cellW + 6}
+            height={(box.r2 - box.r1) * cellH + 6}
+            fill="none"
+            stroke={box.color}
+            strokeWidth="3"
+            strokeDasharray="6,3"
+            rx="4"
+          />
         ))}
 
-        {/* 单元格 */}
+        {/* 只画存在格子的网格线 */}
         {Array.from({ length: rows }, (_, r) =>
           Array.from({ length: cols }, (_, c) => {
-            const x = pad + c * cellW, y = pad + r * cellH
+            if (!cellExists(r, c)) return null
+            const x = padLeft + c * cellW, y = padTop + r * cellH
+            const lines = []
+            // 上边线
+            lines.push(<line key={`t${r},${c}`} x1={x} y1={y} x2={x + cellW} y2={y} stroke="#94a3b8" strokeWidth="1.5" />)
+            // 下边线
+            lines.push(<line key={`b${r},${c}`} x1={x} y1={y + cellH} x2={x + cellW} y2={y + cellH} stroke="#94a3b8" strokeWidth="1.5" />)
+            // 左边线
+            lines.push(<line key={`l${r},${c}`} x1={x} y1={y} x2={x} y2={y + cellH} stroke="#94a3b8" strokeWidth="1.5" />)
+            // 右边线
+            lines.push(<line key={`r${r},${c}`} x1={x + cellW} y1={y} x2={x + cellW} y2={y + cellH} stroke="#94a3b8" strokeWidth="1.5" />)
+            return lines
+          })
+        )}
+
+        {/* 格子内容 */}
+        {Array.from({ length: rows }, (_, r) =>
+          Array.from({ length: cols }, (_, c) => {
+            if (!cellExists(r, c)) return null
+            const x = padLeft + c * cellW, y = padTop + r * cellH
             const key = `${r},${c}`
             const isForbidden = forbiddenSet.has(key)
             const isHighlight = highlightSet.has(key)
             const num = numbers?.[r]?.[c]
-            const isStart = r === rows - 1 && c === 0
-            const isEnd = r === 0 && c === cols - 1
+            const isStart = r === sRow && c === sCol
+            const isEnd = r === eRow && c === eCol
+
+            const handleClick = () => {
+              if (interactive && onCellClick && !isForbidden && !isStart && !isEnd) {
+                onCellClick(r, c)
+              }
+            }
+
+            // 背景色
+            let fill = 'white'
+            if (isForbidden) fill = '#fecaca'
+            else if (isStart) fill = '#bbf7d0'
+            else if (isEnd) fill = '#bfdbfe'
+            else if (isHighlight) fill = '#fef08a'
 
             return (
               <g key={key}>
-                <rect x={x} y={y} width={cellW} height={cellH}
-                  fill={isForbidden ? '#fecaca' : isStart ? '#bbf7d0' : isEnd ? '#bfdbfe' : isHighlight ? '#fef08a' : 'white'}
-                  stroke={isForbidden ? '#ef4444' : '#e2e8f0'} strokeWidth={isForbidden ? 2 : 1}
-                  className={animated && num !== null && num !== undefined ? 'cell-appear' : ''} />
-                {isForbidden && <text x={x + cellW / 2} y={y + cellH / 2 + 8} textAnchor="middle" fontSize="20" fill="#ef4444" fontWeight="bold">×</text>}
-                {isStart && <text x={x + cellW / 2} y={y + cellH / 2 + 10} textAnchor="middle" fontSize="22" fontWeight="bold" fill="#16a34a">A</text>}
-                {isEnd && <text x={x + cellW / 2} y={y + cellH / 2 + 10} textAnchor="middle" fontSize="22" fontWeight="bold" fill="#2563eb">B</text>}
-                {num !== null && num !== undefined && !isForbidden && !isStart && !isEnd && (
-                  <text x={x + cellW / 2} y={y + cellH / 2 + 8} textAnchor="middle" fontSize="18" fontWeight="bold" fill={isHighlight ? '#ca8a04' : '#6366f1'}>{num}</text>
+                <rect
+                  x={x} y={y} width={cellW} height={cellH}
+                  fill={fill}
+                  stroke="none"
+                  style={{ cursor: interactive && !isForbidden && !isStart && !isEnd ? 'pointer' : 'default' }}
+                  onClick={handleClick}
+                />
+                {/* 禁止标记 */}
+                {isForbidden && (
+                  <text x={x + cellW / 2} y={y + cellH / 2 + 7} textAnchor="middle" fontSize="22" fill="#ef4444" fontWeight="bold">×</text>
                 )}
-                {/* 方向箭头 */}
-                {c < cols - 1 && !isEnd && !isForbidden && <text x={x + cellW - 8} y={y + cellH / 2 + 4} fontSize="12" fill="#94a3b8">→</text>}
-                {r > 0 && !isStart && !isForbidden && <text x={x + cellW / 2} y={y + 14} textAnchor="middle" fontSize="12" fill="#94a3b8">↑</text>}
+                {/* 起点标签（格子内，只显示短标签） */}
+                {isStart && (
+                  <text x={x + cellW / 2} y={y + cellH / 2 + 8} textAnchor="middle" fontSize="18" fontWeight="bold" fill="#16a34a">
+                    {startLabel.length <= 2 ? startLabel : '起'}
+                  </text>
+                )}
+                {/* 终点标签（格子内，只显示短标签） */}
+                {isEnd && (
+                  <text x={x + cellW / 2} y={y + cellH / 2 + 8} textAnchor="middle" fontSize="18" fontWeight="bold" fill="#2563eb">
+                    {endLabel.length <= 2 ? endLabel : '终'}
+                  </text>
+                )}
+                {/* 数字 */}
+                {num !== null && num !== undefined && !isForbidden && !isStart && !isEnd && (
+                  <text
+                    x={x + cellW / 2}
+                    y={y + cellH / 2 + 8}
+                    textAnchor="middle"
+                    fontSize={num >= 100 ? "16" : "20"}
+                    fontWeight="bold"
+                    fill={isHighlight ? '#ca8a04' : '#6366f1'}
+                  >{num}</text>
+                )}
+                {/* 特殊点标记（如C点） */}
+                {specialPoints?.find(p => p.r === r && p.c === c) && (() => {
+                  const sp = specialPoints.find(p => p.r === r && p.c === c)!
+                  return (
+                    <text x={x + cellW - 10} y={y + 14} textAnchor="middle" fontSize="13" fontWeight="bold" fill={sp.color || '#ec4899'}>{sp.label}</text>
+                  )
+                })()}
               </g>
             )
           })
+        )}
+
+        {/* 起点标签（格子外，长标签时显示完整名称） */}
+        {startLabel.length > 2 && (
+          <text
+            x={padLeft + sCol * cellW + cellW / 2}
+            y={padTop + sRow * cellH + cellH + 20}
+            textAnchor="middle"
+            fontSize="13"
+            fontWeight="bold"
+            fill="#16a34a"
+          >{startLabel}</text>
+        )}
+
+        {/* 终点标签（格子外，长标签时显示完整名称） */}
+        {endLabel.length > 2 && (
+          <text
+            x={padLeft + eCol * cellW + cellW / 2}
+            y={padTop + eRow * cellH - 8}
+            textAnchor="middle"
+            fontSize="13"
+            fontWeight="bold"
+            fill="#2563eb"
+          >{endLabel}</text>
         )}
       </svg>
     </div>
   )
 }
 
-// 标数法：基础例题网格 (5列4行)
-const basicGrid = [
-  [1, 5, 15, 35, 70],
-  [1, 4, 10, 20, 35],
-  [1, 3, 6, 10, 15],
-  [1, 1, 1, 1, 1],
+// ==================== 标数法模块 - 完全按照参考图片设计 ====================
+
+// ---- 网格标数法核心算法 ----
+// 标准矩形网格：从左下角A到右上角B，只能向右或向上
+// rows×cols 表示交叉点数量（不是格子数）
+// grid[0] = 顶行(B所在行), grid[rows-1] = 底行(A所在行)
+// grid[r][c]: r=0顶, r=rows-1底; c=0左, c=cols-1右
+
+// 基础型：4列×4行交叉点，A在左下(row3,col0)，B在右上(row0,col3)
+// 规则：某点 = 左方点 + 下方点（即 grid[r][c] = grid[r][c-1] + grid[r+1][c]）
+// 底行全1，左列全1
+const basicGrid: number[][] = [
+  [1,  4,  10, 20],  // 顶行，B在[0][3]=20
+  [1,  3,   6, 10],
+  [1,  2,   3,  4],
+  [1,  1,   1,  1],  // 底行，A在[3][0]=1
 ]
 
-// 标数法：不过某点网格
-const forbiddenGrid = [
-  [1, 5, 14, 28, 48],
-  [1, 4, 9, 14, 20],
-  [1, 3, 0, 5, 6],
-  [1, 1, 1, 1, 1],
+// 不过某点：5列×5行，C在[2][3]（从顶数第3行，从左数第4列）
+// C标0，影响后续标数
+const forbiddenGrid: (number | null)[][] = [
+  [1,  5,  15, 25, 40],  // 顶行，B在[0][4]=40
+  [1,  4,  10, 10, 15],
+  [1,  3,   6,  0,  5],  // C在[2][3]=0
+  [1,  2,   3,  4,  5],
+  [1,  1,   1,  1,  1],  // 底行，A在[4][0]=1
 ]
 
-// 标数法：必过某点 - A到C
-const mustPassAC = [
-  [6, 0, 0],
-  [3, 0, 0],
-  [1, 1, 1],
+// 必过某点：5列×5行，C在[2][2]（从顶数第3行，从左数第3列）
+// 分两段：A→C段（左下3×3子网格），C→B段（C作为新起点）
+// A→C段：C=[2][2]=6
+// C→B段：C重新作为起点标6，向右向上继续标
+const mustPassGrid: (number | null)[][] = [
+  [null, null,  6,  18,  36,  60],  // 顶行，B在[0][5]=60
+  [null, null,  6,  12,  18,  24],
+  [   1,    3,  6,   6,   6,   6],  // C在[2][2]=6（第一程终点=第二程起点）
+  [   1,    2,  3, null, null, null],
+  [   1,    1,  1, null, null, null],  // 底行，A在[4][0]=1
 ]
 
-// 标数法：必过某点 - C到B
-const mustPassCB = [
-  [4, 10, 20],
-  [3, 6, 10],
-  [1, 0, 0],
+// 特殊形状：阶梯形，丁丁家在右下角，乐乐老师家在左上角
+// 方向：向左或向上（从右下到左上）
+// 规则：某格 = 右方格 + 下方格
+// 底行5格，row3全5格，row2前4格，row1前3格，row0前2格
+const specialGrid: (number | null)[][] = [
+  [90,  42, null, null, null],  // 顶行2格，乐乐老师家在[0][0]=90
+  [48,  28,   14, null, null],  // 第2行3格
+  [20,  14,    9,    5, null],  // 第3行4格
+  [ 6,   5,    4,    3,    2],  // 第4行5格
+  [ 1,   1,    1,    1,    1],  // 底行5格，丁丁家在[4][4]=1
 ]
 
-// 标数法：特殊形状
-const specialGrid = [
-  [1, 3, 6, 10],
-  [1, 2, 3, 4],
-  [0, 1, 1, 1],
-  [1, 1, 0, 0],
-]
-
+// ==================== 标数法入口介绍页 ====================
 const SPIntroPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => (
   <div className="page">
     <button className="back-btn" onClick={onBack}>← 返回目录</button>
     <FadeIn><h2 className="page-title"><span className="emoji">🗺️</span>什么是标数法？</h2></FadeIn>
-    <FadeIn delay={300}><div className="story-box"><div className="story-icon">🚶</div><p>田田从家(A)去学校(B)，有多少条最短路线？</p></div></FadeIn>
-    <FadeIn delay={600}><div className="concept-box">
-      <p>最短路线有三个要求：</p>
-      <div className="concept-list">
-        <span className="concept-item">🚫 不绕路</span>
-        <span className="concept-item">🚫 不重复</span>
-        <span className="concept-item">🚫 不回头</span>
+    
+    <FadeIn delay={300}>
+      <div className="story-box">
+        <div className="story-icon">🚶</div>
+        <p>田田从家 (A) 去学校 (B)，有多少条最短路线？</p>
       </div>
-    </div></FadeIn>
-    <FadeIn delay={900}><div className="tip-box"><span className="tip-icon">💡</span><p>只能向右走或向上走！</p></div></FadeIn>
-    <FadeIn delay={1200}><div className="venn-demo"><GridDiagram rows={3} cols={4} startLabel="A" endLabel="B" /></div></FadeIn>
-    <FadeIn delay={1500}><button className="next-btn" onClick={onNext}>学习标数法 →</button></FadeIn>
+    </FadeIn>
+    
+    <FadeIn delay={600}>
+      <div className="concept-box">
+        <p><strong>最短路线</strong>有三个要求：</p>
+        <div className="concept-list">
+          <span className="concept-item">🚫 不绕路</span>
+          <span className="concept-item">🚫 不重复</span>
+          <span className="concept-item">🚫 不回头</span>
+        </div>
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={900}>
+      <div className="tip-box">
+        <span className="tip-icon">💡</span>
+        <p>在网格图中，从左下角到右上角的最短路线，只能<strong>向右</strong>或<strong>向上</strong>走！</p>
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={1200}>
+      <div className="venn-demo">
+        <GridDiagram rows={4} cols={4} />
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={1500}>
+      <div className="rule-box">
+        <p><strong>标数法核心：</strong></p>
+        <p className="rhyme">某点的数 = 来源路线数之和</p>
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={1800}>
+      <button className="next-btn" onClick={onNext}>学习标数法步骤 →</button>
+    </FadeIn>
   </div>
 )
 
-const SPConceptPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => (
-  <div className="page">
-    <button className="back-btn" onClick={onBack}>← 返回目录</button>
-    <FadeIn><h2 className="page-title"><span className="emoji">⭐</span>标数法核心</h2></FadeIn>
-    <FadeIn delay={300}><div className="formula-box"><div className="formula" style={{ fontSize: '1.5rem' }}>某点的数 = 来源路线数之和</div></div></FadeIn>
-    <FadeIn delay={600}><div className="step-card"><span className="step-number">1</span><p>找<strong>起点</strong>和<strong>终点</strong></p></div></FadeIn>
-    <FadeIn delay={900}><div className="step-card"><span className="step-number">2</span><p>确定方向：<strong>向右、向上</strong></p></div></FadeIn>
-    <FadeIn delay={1200}><div className="step-card"><span className="step-number">3</span><p>起点标<strong>1</strong>，同行同列都标<strong>1</strong></p></div></FadeIn>
-    <FadeIn delay={1500}><div className="step-card"><span className="step-number">4</span><p>按方向<strong>由近及远</strong>逐行/列标数</p></div></FadeIn>
-    <FadeIn delay={1800}><button className="next-btn" onClick={onNext}>看例题 →</button></FadeIn>
-  </div>
-)
-
-const SPBasicPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => {
+// ==================== 标数法步骤讲解页 ====================
+const SPConceptPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => {
   const [step, setStep] = useState(0)
-  const animatedCells: [number, number][] = step === 0 ? [] : step === 1 ? [[3,0],[3,1],[3,2],[3,3],[3,4],[2,0],[1,0],[0,0]] : step === 2 ? [[2,1],[1,1],[0,1]] : step === 3 ? [[2,2],[1,2],[0,2]] : step === 4 ? [[2,3],[1,3],[0,3]] : step === 5 ? [[0,4]] : []
+  
+  // 逐步展示标数过程，与图片P2基础型一致
+  // grid[0]=顶行(B), grid[3]=底行(A)，4列4行
+  // undefined = 格子存在但未标数，null = 格子不存在
+  const stepGrids: (number | null | undefined)[][][] = [
+    // step0: 空网格（所有格子存在但未标数）
+    [[undefined,undefined,undefined,undefined],[undefined,undefined,undefined,undefined],[undefined,undefined,undefined,undefined],[undefined,undefined,undefined,undefined]],
+    // step1: 底行（A行）全标1
+    [[undefined,undefined,undefined,undefined],[undefined,undefined,undefined,undefined],[undefined,undefined,undefined,undefined],[1,1,1,1]],
+    // step2: 左列全标1
+    [[1,undefined,undefined,undefined],[1,undefined,undefined,undefined],[1,undefined,undefined,undefined],[1,1,1,1]],
+    // step3: 第2列
+    [[1,4,undefined,undefined],[1,3,undefined,undefined],[1,2,undefined,undefined],[1,1,1,1]],
+    // step4: 第3列
+    [[1,4,10,undefined],[1,3,6,undefined],[1,2,3,undefined],[1,1,1,1]],
+    // step5: 完整（B=20）
+    [[1,4,10,20],[1,3,6,10],[1,2,3,4],[1,1,1,1]],
+  ]
+
+  const stepTexts = [
+    { num: '1', text: '找起点 A（左下角）和终点 B（右上角）', btn: '② 标底行 →' },
+    { num: '2', text: 'A 点标 1，A 所在的底行全部标 1（只有一条路能到达）', btn: '③ 标左列 →' },
+    { num: '3', text: 'A 所在的左列全部标 1（只有一条路能到达）', btn: '④ 标第2列 →' },
+    { num: '4', text: '第2列：每格 = 左方格 + 下方格（2=1+1, 3=1+2, 4=1+3）', btn: '⑤ 标第3列 →' },
+    { num: '5', text: '第3列：每格 = 左方格 + 下方格（3=2+1, 6=3+3, 10=4+6）', btn: '⑥ 标到终点 →' },
+    { num: '6', text: '第4列：4=3+1, 10=6+4, 20=10+10，终点 B 的数就是答案！', btn: '看基础例题 →' },
+  ]
 
   return (
     <div className="page">
       <button className="back-btn" onClick={onBack}>← 返回目录</button>
-      <FadeIn><h2 className="page-title"><span className="emoji">📝</span>基础例题</h2></FadeIn>
-      <FadeIn delay={300}><div className="example-box"><h3>📋 题目</h3><p>从A点到B点，共有多少种不同的最短路线？</p></div></FadeIn>
-      <FadeIn delay={600}><div className="venn-demo"><GridDiagram rows={4} cols={5} numbers={step >= 6 ? basicGrid : undefined} animated highlightCells={animatedCells} /></div></FadeIn>
+      <FadeIn><h2 className="page-title"><span className="emoji">⭐</span>标数法步骤</h2></FadeIn>
+      
+      <FadeIn delay={300}>
+        <div className="formula-box">
+          <div className="formula" style={{ fontSize: '1.4rem' }}>某点的数 = 左方格的数 + 下方格的数</div>
+        </div>
+      </FadeIn>
+      
+      <FadeIn delay={600}>
+        <div className="venn-demo">
+          <GridDiagram rows={4} cols={4} numbers={stepGrids[step]} />
+        </div>
+      </FadeIn>
 
-      {step === 0 && <FadeIn delay={900}><button className="next-btn" onClick={() => setStep(1)}>① 起点行列标1 →</button></FadeIn>}
-      {step === 1 && <FadeIn><div className="tip-box"><span className="tip-icon">📌</span><p>起点A所在的第一行和第一列都标1，因为只有一条路能到达这些格子</p></div><button className="next-btn" onClick={() => setStep(2)}>② 继续标数 →</button></FadeIn>}
-      {step === 2 && <FadeIn><div className="tip-box"><span className="tip-icon">🔢</span><p>第2列：每个格子 = 上方 + 左方的数之和</p></div><button className="next-btn" onClick={() => setStep(3)}>③ 继续 →</button></FadeIn>}
-      {step === 3 && <FadeIn><button className="next-btn" onClick={() => setStep(4)}>④ 继续 →</button></FadeIn>}
-      {step === 4 && <FadeIn><button className="next-btn" onClick={() => setStep(5)}>⑤ 标到B →</button></FadeIn>}
-      {step === 5 && <FadeIn><button className="next-btn" onClick={() => setStep(6)}>⑥ 查看答案 →</button></FadeIn>}
-      {step >= 6 && <>
-        <FadeIn delay={200}><div className="answer-box"><span className="answer-icon">🎉</span><p>B点标的是<strong>70</strong></p><p>共有<strong>70种</strong>最短路线！</p></div></FadeIn>
-        <FadeIn delay={500}><button className="next-btn" onClick={onNext}>学习进阶 →</button></FadeIn>
-      </>}
+      <FadeIn delay={800}>
+        <div className={`step-card ${step === 5 ? 'step-final' : step > 0 ? 'step-highlight' : ''}`}>
+          <span className="step-number">{stepTexts[step].num}</span>
+          <p>{stepTexts[step].text}</p>
+        </div>
+        {step === 5 ? (
+          <>
+            <div className="answer-box" style={{marginTop: '15px'}}>
+              <span className="answer-icon">🎉</span>
+              <p>共有<strong>20 条</strong>最短路线！</p>
+            </div>
+            <button className="next-btn" onClick={onNext}>{stepTexts[step].btn}</button>
+          </>
+        ) : (
+          <button className="next-btn" onClick={() => setStep(s => s + 1)}>{stepTexts[step].btn}</button>
+        )}
+      </FadeIn>
     </div>
   )
 }
 
+// ==================== 标数法基础例题页 ====================
+// 对应图片P2：4列×4行，A在左下，B在右上，答案20
+const SPBasicPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => {
+  return (
+    <div className="page">
+      <button className="back-btn" onClick={onBack}>← 返回目录</button>
+      <FadeIn><h2 className="page-title"><span className="emoji">📝</span>①基础型</h2></FadeIn>
+      
+      <FadeIn delay={300}>
+        <div className="example-box">
+          <h3>📋 例题</h3>
+          <p>田田在下面的路线图中，从 A 点到 B 点，共有多少种不同的最短路线？</p>
+        </div>
+      </FadeIn>
+      
+      <FadeIn delay={600}>
+        <div className="venn-demo">
+          {/* basicGrid: 4列4行，A在[3][0]，B在[0][3] */}
+          <GridDiagram
+            rows={4}
+            cols={4}
+            numbers={basicGrid}
+          />
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={900}>
+        <div className="rule-box">
+          <p><strong>解析：</strong>①找起点 A、终点 B；②确定方向：向右向上；③A 点标 1，A 所在行和列都标 1；④按方向由近及远逐行/列标数；⑤终点 B 的标数就是答案。</p>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={1200}>
+        <div className="answer-box">
+          <span className="answer-icon">🎉</span>
+          <p>终点 B 标的是 <strong>20</strong></p>
+          <p>共有 <strong>20 种</strong>最短路线！</p>
+        </div>
+      </FadeIn>
+      
+      <FadeIn delay={1500}>
+        <button className="next-btn" onClick={onNext}>学习不过某点 →</button>
+      </FadeIn>
+    </div>
+  )
+}
+
+// ==================== 标数法 - 不过某点题型 ====================
+// 对应图片P2：5列×5行，C在[2][3]，C标0，答案40
 const SPForbiddenPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => (
   <div className="page">
     <button className="back-btn" onClick={onBack}>← 返回目录</button>
-    <FadeIn><h2 className="page-title"><span className="emoji">🚫</span>不过某点</h2></FadeIn>
-    <FadeIn delay={300}><div className="example-box"><h3>📋 题目</h3><p>从A到B，但<strong>不能经过C点</strong>的商店</p><p>不同的最短路线一共有多少条？</p></div></FadeIn>
-    <FadeIn delay={600}><div className="venn-demo"><GridDiagram rows={4} cols={5} numbers={forbiddenGrid} forbidden={[[2, 2]]} /></div></FadeIn>
-    <FadeIn delay={900}><div className="tip-box"><span className="tip-icon">💡</span><p>不能经过的点标<strong>0</strong>或打<strong>×</strong></p></div></FadeIn>
-    <FadeIn delay={1200}><div className="rule-box"><p>注意：</p><p className="rhyme" style={{ fontSize: '1.3rem' }}>C点标0后会影响后面点的标数</p></div></FadeIn>
-    <FadeIn delay={1500}><div className="answer-box"><span className="answer-icon">✅</span><p>B点标的是<strong>48</strong></p><p>共有<strong>48条</strong>最短路线</p></div></FadeIn>
-    <FadeIn delay={1800}><button className="next-btn" onClick={onNext}>学习下一题型 →</button></FadeIn>
+    <FadeIn><h2 className="page-title"><span className="emoji">🚫</span>②不过某点/某区域</h2></FadeIn>
+    
+    <FadeIn delay={300}>
+      <div className="example-box">
+        <h3>📋 例题</h3>
+        <p>田田从家所在的 A 点去学校所在的 B 点，但途中不能经过 C 点的商店，不同的最短路线一共有多少条？</p>
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={600}>
+      <div className="tip-box">
+        <span className="tip-icon">💡</span>
+        <p>不能经过的点标 <strong>0</strong> 或打 <strong>×</strong>，C 点标 0 后会影响后面点的标数！</p>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={900}>
+      <div className="venn-demo">
+        {/*
+          forbiddenGrid: 5列×5行
+          A在[4][0]（左下），B在[0][4]（右上）
+          C在[2][3]，标0
+          底行：1,1,1,1,1
+          第2行：1,2,3,4,5
+          第3行：1,3,6,0(C),5
+          第4行：1,4,10,10,15
+          顶行：1,5,15,25,40(B)
+        */}
+        <GridDiagram
+          rows={5}
+          cols={5}
+          numbers={forbiddenGrid}
+          forbidden={[[2, 3]]}
+          specialPoints={[{ r: 2, c: 3, label: 'C', color: '#ec4899' }]}
+        />
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={1200}>
+      <div className="rule-box">
+        <p><strong>解析：</strong>C 点标 0，C 右方的格子只能从下方来（不能从 C 来），所以 C 右方的格子数值会减少。按照标数法步骤继续标，终点 B 的标数就是 40。</p>
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={1500}>
+      <div className="answer-box">
+        <span className="answer-icon">✅</span>
+        <p>终点 B 标的是 <strong>40</strong></p>
+        <p>共有 <strong>40 条</strong>最短路线</p>
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={1800}>
+      <button className="next-btn" onClick={onNext}>学习必过某点 →</button>
+    </FadeIn>
   </div>
 )
 
+// ==================== 标数法 - 必过某点题型 ====================
+// 对应图片P3：5列×5行，C在[2][2]，分两段
+// 第一程 A→C：左下3×3子网格，C=[2][2]=6
+// 第二程 C→B：C作为新起点标6，向右向上继续
+// 完整网格6列×5行（含两段合并展示）
 const SPMustPassPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => (
   <div className="page">
     <button className="back-btn" onClick={onBack}>← 返回目录</button>
-    <FadeIn><h2 className="page-title"><span className="emoji">✅</span>必过某点</h2></FadeIn>
-    <FadeIn delay={300}><div className="example-box"><h3>📋 题目</h3><p>从A到B，但<strong>必须经过C点</strong></p><p>不同的最短路线共有多少条？</p></div></FadeIn>
-    <FadeIn delay={600}><div className="tip-box"><span className="tip-icon">💡</span><p>必过某点 → <strong>分段标数</strong>，圈出范围</p></div></FadeIn>
-    <FadeIn delay={900}><div className="segment-demo">
-      <div className="segment-box">
-        <h4>第一程：A → C</h4>
-        <GridDiagram rows={3} cols={3} numbers={mustPassAC} />
-        <p className="segment-result">A到C：<strong>6条</strong>路线</p>
+    <FadeIn><h2 className="page-title"><span className="emoji">✅</span>③必过某点/某线</h2></FadeIn>
+    
+    <FadeIn delay={300}>
+      <div className="example-box">
+        <h3>📋 例题</h3>
+        <p>田田从家所在的 A 点去学校所在的 B 点，但途中必须经过 C 点的牛牛家，不同的最短路线共有多少条？</p>
       </div>
-      <div className="segment-arrow">→</div>
-      <div className="segment-box">
-        <h4>第二程：C → B</h4>
-        <GridDiagram rows={3} cols={3} numbers={mustPassCB} />
-        <p className="segment-result">C到B：<strong>20条</strong>路线</p>
+    </FadeIn>
+    
+    <FadeIn delay={600}>
+      <div className="tip-box">
+        <span className="tip-icon">💡</span>
+        <p>必过某点 → <strong>分段标数，圈画出范围</strong></p>
+        <p style={{marginTop: 6}}>第一程：A → C；第二程：C → B（C 的标数作为第二程起点值）</p>
       </div>
-    </div></FadeIn>
-    <FadeIn delay={1200}><div className="calculation">
-      <div className="calc-step"><span className="calc-num">6</span><span className="calc-op">×</span><span className="calc-num">20</span><span className="calc-op">=</span><span className="calc-num result">120</span></div>
-    </div></FadeIn>
-    <FadeIn delay={1500}><div className="answer-box"><span className="answer-icon">🎉</span><p>共有<strong>120条</strong>最短路线</p></div></FadeIn>
-    <FadeIn delay={1800}><button className="next-btn" onClick={onNext}>学习特殊形状 →</button></FadeIn>
+    </FadeIn>
+    
+    <FadeIn delay={900}>
+      <div className="venn-demo">
+        {/*
+          mustPassGrid: 6列×5行（合并两段展示）
+          A在[4][0]（左下），B在[0][5]（右上）
+          C在[2][2]，C=6（第一程终点=第二程起点）
+          
+          第一程 A→C（左下3×3子网格）：
+            [4][0..2]: 1,1,1
+            [3][0..2]: 1,2,3
+            [2][0..2]: 1,3,6(C)
+          
+          第二程 C→B（C标6，向右向上）：
+            [2][2..5]: 6,6,6,6
+            [1][2..5]: 6,12,18,24
+            [0][2..5]: 6,18,36,60(B)
+          
+          null表示不参与该程的格子
+        */}
+        <GridDiagram
+          rows={5}
+          cols={6}
+          numbers={mustPassGrid}
+          startPos={[4, 0]}
+          endPos={[0, 5]}
+          segmentBoxes={[
+            { r1: 2, c1: 0, r2: 5, c2: 3, color: '#ef4444' },   // 第一程框（A→C）
+            { r1: 0, c1: 2, r2: 3, c2: 6, color: '#3b82f6' },   // 第二程框（C→B）
+          ]}
+          specialPoints={[{ r: 2, c: 2, label: 'C', color: '#ec4899' }]}
+        />
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={1200}>
+      <div className="rule-box">
+        <p><strong>解析：</strong>C 点是必过的点，把题目拆解为先去 C 点再去 B 点。第一程从 A 到 C，C 点标 6；第二程从 C 到 B，C 作为新起点标 6，继续按标数法标数，终点 B 标 60。</p>
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={1500}>
+      <div className="answer-box">
+        <span className="answer-icon">🎉</span>
+        <p>终点 B 标的是 <strong>60</strong></p>
+        <p>共有 <strong>60 条</strong>最短路线</p>
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={1800}>
+      <button className="next-btn" onClick={onNext}>学习特殊形状 →</button>
+    </FadeIn>
   </div>
 )
 
+// ==================== 标数法 - 特殊形状题型 ====================
+// 对应图片P3：阶梯形，丁丁家在右下角，乐乐老师家在左上角
+// 方向：向左或向上（从右下到左上）
+// 底行5格（col0~4），往上每行右侧减少1格
+// specialGrid[r][c]: null表示该格不存在
 const SPSpecialPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => (
   <div className="page">
     <button className="back-btn" onClick={onBack}>← 返回目录</button>
-    <FadeIn><h2 className="page-title"><span className="emoji">🔷</span>特殊形状</h2></FadeIn>
-    <FadeIn delay={300}><div className="example-box"><h3>📋 题目</h3><p>丁丁从家里去乐乐老师家，路线图如下</p><p>最短路线一共有多少条？</p></div></FadeIn>
-    <FadeIn delay={600}><div className="tip-box"><span className="tip-icon">⚠️</span><p>不再是规整的矩形！要<strong>看清每个点能从哪里来</strong></p></div></FadeIn>
-    <FadeIn delay={900}><div className="venn-demo"><GridDiagram rows={4} cols={4} numbers={specialGrid} forbidden={[[2, 0], [3, 2], [3, 3]]} /></div></FadeIn>
-    <FadeIn delay={1200}><div className="rule-box"><p>关键：</p><p className="rhyme" style={{ fontSize: '1.3rem' }}>看清每个点从哪里来</p></div></FadeIn>
-    <FadeIn delay={1500}><div className="answer-box"><span className="answer-icon">✅</span><p>B点标的是<strong>10</strong></p><p>共有<strong>10条</strong>最短路线</p></div></FadeIn>
-    <FadeIn delay={1800}><button className="next-btn" onClick={onNext}>开始练习 →</button></FadeIn>
+    <FadeIn><h2 className="page-title"><span className="emoji">🔷</span>④特殊形状</h2></FadeIn>
+    
+    <FadeIn delay={300}>
+      <div className="example-box">
+        <h3>📋 例题</h3>
+        <p>丁丁从家里去乐乐老师家，路线图如下所示，最短路线一共有多少条？</p>
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={600}>
+      <div className="tip-box">
+        <span className="tip-icon">⚠️</span>
+        <p>不再是规整的矩形！要<strong>看清每个点能从哪里来</strong>，再按标数法步骤做。</p>
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={900}>
+      <div className="venn-demo">
+        {/*
+          specialGrid: 5列×5行，阶梯形
+          丁丁家在右下角[4][4]，乐乐老师家在左上角[0][0]
+          方向：向左或向上
+          
+          底行（row4）：1, 1, 1, 1, 1（全5格）
+          row3：6, 5, 4, 3, 2（全5格）
+          row2：20, 14, 9, 5, null（4格，右侧1格不存在）
+          row1：48, 28, 14, null, null（3格）
+          顶行（row0）：90, 42, null, null, null（2格，乐乐老师家在[0][0]）
+          
+          起点：丁丁家[4][4]（右下）
+          终点：乐乐老师家[0][0]（左上）
+        */}
+        <GridDiagram
+          rows={5}
+          cols={5}
+          numbers={specialGrid}
+          startPos={[4, 4]}
+          endPos={[0, 0]}
+          startLabel="丁丁家"
+          endLabel="乐乐老师家"
+        />
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={1200}>
+      <div className="rule-box">
+        <p><strong>解析：</strong>丁丁走的区域是特殊阶梯形，不是规整矩形。做这道题一定要看清标的这个点能从哪里来（只能向左或向上），然后再按照标数法的步骤去做。</p>
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={1500}>
+      <div className="answer-box">
+        <span className="answer-icon">✅</span>
+        <p>乐乐老师家标的是 <strong>90</strong></p>
+        <p>共有 <strong>90 条</strong>最短路线</p>
+      </div>
+    </FadeIn>
+    
+    <FadeIn delay={1800}>
+      <button className="next-btn" onClick={onNext}>开始练习 →</button>
+    </FadeIn>
   </div>
 )
 
 const SPPracticePage = ({ onBack, onHome }: { onBack: () => void, onHome: () => void }) => {
+  const [currentProblem, setCurrentProblem] = useState(0)
   const [answer, setAnswer] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [isCorrect, setIsCorrect] = useState(false)
-  const handleSubmit = () => { setSubmitted(true); setIsCorrect(parseInt(answer) === 35) }
+  const [showCelebration, setShowCelebration] = useState(false)
+
+  const problems = [
+    {
+      title: "①基础练习",
+      question: "从 A 点到 B 点，最短路线有多少种？（3列×3行网格）",
+      rows: 3,
+      cols: 3,
+      answer: 6,
+      forbidden: [] as [number, number][]
+    },
+    {
+      title: "②基础练习（进阶）",
+      question: "从 A 点到 B 点，最短路线有多少种？（3列×4行网格）",
+      rows: 4,
+      cols: 3,
+      answer: 10,
+      forbidden: [] as [number, number][]
+    },
+    {
+      title: "③不过某点",
+      question: "从 A 到 B，不能经过 C 点（第2行第2列），最短路线有多少种？",
+      rows: 4,
+      cols: 4,
+      forbidden: [[2, 1]] as [number, number][],
+      answer: 8,
+    },
+  ]
+
+  const current = problems[currentProblem]
+
+  const handleSubmit = () => {
+    const correct = parseInt(answer) === current.answer
+    setSubmitted(true)
+    setIsCorrect(correct)
+    if (correct) {
+      setShowCelebration(true)
+      setTimeout(() => setShowCelebration(false), 2000)
+    }
+  }
+
+  const nextProblem = () => {
+    if (currentProblem < problems.length - 1) {
+      setCurrentProblem(currentProblem + 1)
+      setAnswer('')
+      setSubmitted(false)
+      setIsCorrect(false)
+    }
+  }
+
+  const prevProblem = () => {
+    if (currentProblem > 0) {
+      setCurrentProblem(currentProblem - 1)
+      setAnswer('')
+      setSubmitted(false)
+      setIsCorrect(false)
+    }
+  }
+
   return (
     <div className="page">
       <button className="back-btn" onClick={onBack}>← 返回目录</button>
       <FadeIn><h2 className="page-title"><span className="emoji">🎮</span>小小练习</h2></FadeIn>
-      <FadeIn delay={300}><div className="example-box"><h3>📋 题目</h3><p>从A点到B点，最短路线有多少种？</p></div></FadeIn>
-      <FadeIn delay={600}><div className="venn-demo"><GridDiagram rows={4} cols={5} /></div></FadeIn>
+      <FadeIn delay={300}>
+        <div className="example-box">
+          <h3>📋 题目 {currentProblem + 1}/{problems.length}</h3>
+          <p>{current.title}</p>
+          <p>{current.question}</p>
+        </div>
+      </FadeIn>
+      <FadeIn delay={600}>
+        <div className="venn-demo">
+          <GridDiagram 
+            rows={current.rows} 
+            cols={current.cols} 
+            forbidden={current.forbidden}
+          />
+        </div>
+      </FadeIn>
       <FadeIn delay={900}>{!submitted ? (
-        <div className="answer-input"><input type="number" value={answer} onChange={e => setAnswer(e.target.value)} placeholder="请输入答案" /><button className="submit-btn" onClick={handleSubmit}>提交答案</button></div>
+        <div className="answer-input">
+          <input type="number" value={answer} onChange={e => setAnswer(e.target.value)} placeholder="请输入答案" />
+          <button className="submit-btn" onClick={handleSubmit}>提交答案</button>
+        </div>
       ) : (
         <div className={`result-box ${isCorrect ? 'correct' : 'wrong'}`}>
-          {isCorrect ? <><span className="result-icon">🎉</span><p>太棒了！答对了！</p><p className="explanation">用标数法算出：35种</p></> : <><span className="result-icon">🤔</span><p>再想想哦~</p><p className="explanation">提示：用标数法，从起点开始标</p><button className="retry-btn" onClick={() => { setAnswer(''); setSubmitted(false) }}>再试一次</button></>}
+          {isCorrect ? (
+            <>
+              <span className="result-icon">🎉</span>
+              <p>太棒了！答对了！</p>
+              <p className="explanation">正确答案：{current.answer}种</p>
+              {currentProblem < problems.length - 1 && (
+                <button className="next-btn" onClick={nextProblem}>下一题 →</button>
+              )}
+            </>
+          ) : (
+            <>
+              <span className="result-icon">🤔</span>
+              <p>再想想哦~</p>
+              <p className="explanation">提示：用标数法，从起点开始标</p>
+              <button className="retry-btn" onClick={() => { setAnswer(''); setSubmitted(false) }}>再试一次</button>
+            </>
+          )}
         </div>
       )}</FadeIn>
-      <FadeIn delay={1200}><div className="summary-box"><h3>📚 今天学的知识</h3><ul><li>标数法 = 某点数值 = 来源之和</li><li>不过某点 → 标0</li><li>必过某点 → 分段相乘</li><li>特殊形状 → 看清来源</li></ul></div></FadeIn>
-      <FadeIn delay={1500}><button className="restart-btn" onClick={onHome}>✅ 完成学习</button></FadeIn>
+      
+      {showCelebration && (
+        <div className="celebration-overlay">
+          <div className="celebration-stars">
+            {[...Array(20)].map((_, i) => (
+              <Star 
+                key={i} 
+                style={{
+                  top: `${Math.random() * 100}%`,
+                  left: `${Math.random() * 100}%`,
+                  animationDelay: `${i * 0.05}s`,
+                  width: `${20 + Math.random() * 40}px`,
+                  height: `${20 + Math.random() * 40}px`,
+                  color: i % 3 === 0 ? '#fbbf24' : i % 3 === 1 ? '#60a5fa' : '#34d399'
+                }}
+              />
+            ))}
+          </div>
+          <div className="celebration-text">
+            <div className="celebration-emoji">🎉🎊✨</div>
+            <div className="celebration-message">太棒了！</div>
+          </div>
+        </div>
+      )}
+
+      <div className="problem-nav">
+        <button 
+          className="nav-btn" 
+          onClick={prevProblem} 
+          disabled={currentProblem === 0}
+        >
+          ← 上一题
+        </button>
+        <button 
+          className="nav-btn" 
+          onClick={nextProblem} 
+          disabled={currentProblem === problems.length - 1 || !submitted || !isCorrect}
+        >
+          下一题 →
+        </button>
+      </div>
+
+      {currentProblem === problems.length - 1 && submitted && isCorrect && (
+        <FadeIn delay={1200}>
+          <div className="summary-box">
+            <h3>📚 今天学的知识</h3>
+            <ul>
+              <li>标数法 = 某点数值 = 来源之和</li>
+              <li>不过某点 → 标0</li>
+              <li>必过某点 → 分段相乘</li>
+              <li>特殊形状 → 看清来源</li>
+            </ul>
+          </div>
+          <FadeIn delay={1500}><button className="restart-btn" onClick={onHome}>✅ 完成学习</button></FadeIn>
+        </FadeIn>
+      )}
     </div>
   )
 }
