@@ -35,14 +35,58 @@ const Star = ({ style }: { style: React.CSSProperties }) => (
   </div>
 )
 
-const LessonCode = ({ lines, activeLine = -1 }: { lines: string[], activeLine?: number }) => (
+type RuntimeBadge = {
+  label: string
+  value: string
+}
+
+const LessonCode = ({
+  lines,
+  activeLine = -1,
+  lineBadges = {},
+  runtimeBadges = [],
+  runtimeTitle = '当前变量',
+  runtimeHint,
+}: {
+  lines: string[],
+  activeLine?: number,
+  lineBadges?: Record<number, RuntimeBadge[]>,
+  runtimeBadges?: RuntimeBadge[],
+  runtimeTitle?: string,
+  runtimeHint?: string,
+}) => (
   <div className="code-board">
     {lines.map((line, index) => (
       <div key={`${index}-${line}`} className={`code-line ${activeLine === index ? 'active' : ''}`}>
-        <span className="code-index">{index + 1}</span>
-        <code>{line}</code>
+        <div className="code-line-main">
+          <span className="code-index">{index + 1}</span>
+          <code>{line}</code>
+        </div>
+        {lineBadges[index]?.length ? (
+          <div className="code-badges">
+            {lineBadges[index].map((badge) => (
+              <span key={`${index}-${badge.label}-${badge.value}`} className="code-badge">
+                {badge.label} = {badge.value}
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
     ))}
+    {(runtimeBadges.length > 0 || runtimeHint) && (
+      <div className="runtime-panel">
+        <div className="runtime-title">{runtimeTitle}</div>
+        <div className="runtime-list">
+          {runtimeBadges.map((badge) => (
+            <div key={`${badge.label}-${badge.value}`} className="runtime-item">
+              <span className="runtime-label">{badge.label}</span>
+              <span className="runtime-value">{badge.value}</span>
+            </div>
+          ))}
+        </div>
+        {runtimeHint ? <p className="runtime-hint">{runtimeHint}</p> : null}
+      </div>
+    )}
   </div>
 )
 
@@ -1134,19 +1178,101 @@ const LoopSyntaxPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => 
 )
 
 const LoopProcessPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => {
-  const [step, setStep] = useState(1)
+  const frames = [
+    {
+      activeLine: 0,
+      currentPot: 0,
+      wateredCount: 0,
+      description: '先执行第 1 行，把变量 i 设成 1，循环从这里出发。',
+      lineBadges: {
+        0: [{ label: 'i', value: '1' }],
+      },
+      runtimeBadges: [
+        { label: 'i', value: '1' },
+        { label: '已浇花盆', value: '0 盆' },
+      ],
+    },
+    ...Array.from({ length: 5 }, (_, index) => {
+      const value = index + 1
+      return [
+        {
+          activeLine: 1,
+          currentPot: value,
+          wateredCount: value - 1,
+          description: `执行第 2 行，检查条件 i <= 5。现在 i = ${value}，条件成立，可以继续循环。`,
+          lineBadges: {
+            1: [
+              { label: 'i', value: `${value}` },
+              { label: '条件', value: 'true' },
+            ],
+          },
+          runtimeBadges: [
+            { label: 'i', value: `${value}` },
+            { label: '已浇花盆', value: `${value - 1} 盆` },
+          ],
+        },
+        {
+          activeLine: 2,
+          currentPot: value,
+          wateredCount: value - 1,
+          description: `执行第 3 行，按照 i 的值去浇第 ${value} 盆花。`,
+          lineBadges: {
+            2: [
+              { label: 'i', value: `${value}` },
+              { label: '目标', value: `第 ${value} 盆` },
+            ],
+          },
+          runtimeBadges: [
+            { label: 'i', value: `${value}` },
+            { label: '正在执行', value: `浇第 ${value} 盆花` },
+          ],
+        },
+        {
+          activeLine: 3,
+          currentPot: value < 5 ? value + 1 : 0,
+          wateredCount: value,
+          description: `执行第 4 行，i 自增 1，变量从 ${value} 变成 ${value + 1}。`,
+          lineBadges: {
+            3: [{ label: 'i', value: `${value} → ${value + 1}` }],
+          },
+          runtimeBadges: [
+            { label: 'i', value: `${value + 1}` },
+            { label: '已浇花盆', value: `${value} 盆` },
+          ],
+        },
+      ]
+    }).flat(),
+    {
+      activeLine: 1,
+      currentPot: 0,
+      wateredCount: 5,
+      description: '再次检查第 2 行，此时 i = 6，条件不成立，循环结束。',
+      lineBadges: {
+        1: [
+          { label: 'i', value: '6' },
+          { label: '条件', value: 'false' },
+        ],
+      },
+      runtimeBadges: [
+        { label: 'i', value: '6' },
+        { label: '已浇花盆', value: '5 盆' },
+        { label: '循环状态', value: '结束' },
+      ],
+    },
+  ]
+
+  const [step, setStep] = useState(0)
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setStep((current) => current >= 6 ? 1 : current + 1)
+      setStep((current) => current >= frames.length - 1 ? 0 : current + 1)
     }, 1100)
     return () => clearInterval(timer)
-  }, [])
+  }, [frames.length])
 
-  const currentPot = step <= 5 ? step : 0
-  const description = step <= 5
-    ? `现在 i = ${step}，条件成立，机器人正在给第 ${step} 盆花浇水。`
-    : '当 i = 6 时，条件不成立，循环结束，机器人停下来了。'
+  const frame = frames[step]
+  const currentPot = frame.currentPot
+  const description = frame.description
 
   return (
     <div className="page">
@@ -1156,11 +1282,17 @@ const LoopProcessPage = ({ onNext, onBack }: { onNext: () => void, onBack: () =>
       <FadeIn delay={300}>
         <LessonCode
           lines={[
-            'for (int i = 1; i <= 5; i++) {',
+            'int i = 1;',
+            'for (; i <= 5; ) {',
             '  给第 i 盆花浇水;',
+            '  i++;',
             '}',
           ]}
-          activeLine={step <= 5 ? 1 : 0}
+          activeLine={frame.activeLine}
+          lineBadges={frame.lineBadges}
+          runtimeBadges={frame.runtimeBadges}
+          runtimeTitle="这一刻代码里的值"
+          runtimeHint="动画会按照“初始化 → 判断条件 → 执行动作 → 变量变化”的顺序循环播放。"
         />
       </FadeIn>
 
@@ -1169,7 +1301,7 @@ const LoopProcessPage = ({ onNext, onBack }: { onNext: () => void, onBack: () =>
           <div className="counter-row">
             {Array.from({ length: 5 }, (_, index) => {
               const value = index + 1
-              const state = value < currentPot ? 'done' : value === currentPot ? 'current' : 'pending'
+              const state = value <= frame.wateredCount ? 'done' : value === currentPot ? 'current' : 'pending'
               return <div key={value} className={`counter-chip ${state}`}>{value}</div>
             })}
           </div>
@@ -1177,7 +1309,7 @@ const LoopProcessPage = ({ onNext, onBack }: { onNext: () => void, onBack: () =>
           <div className="pot-grid">
             {Array.from({ length: 5 }, (_, index) => {
               const value = index + 1
-              const watered = step > 5 || value < currentPot
+              const watered = value <= frame.wateredCount
               const active = value === currentPot
               return (
                 <div key={value} className={`pot-card ${watered ? 'done' : ''} ${active ? 'current' : ''}`}>
@@ -1189,7 +1321,7 @@ const LoopProcessPage = ({ onNext, onBack }: { onNext: () => void, onBack: () =>
           </div>
 
           <p className="loop-status">{description}</p>
-          <button className="retry-btn" onClick={() => setStep(1)}>重新播放</button>
+          <button className="retry-btn" onClick={() => setStep(0)}>重新播放</button>
         </div>
       </FadeIn>
 

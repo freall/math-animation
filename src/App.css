@@ -1007,12 +1007,19 @@ body {
 
 .code-line {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
   color: #f8fafc;
   padding: 10px 12px;
   border-radius: 14px;
   font-size: 1rem;
+}
+
+.code-line-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   overflow-x: auto;
 }
 
@@ -1030,6 +1037,72 @@ body {
   min-width: 24px;
   color: #93c5fd;
   font-weight: bold;
+}
+
+.code-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-left: 36px;
+}
+
+.code-badge {
+  background: rgba(148, 163, 184, 0.22);
+  color: #e0f2fe;
+  border: 1px solid rgba(125, 211, 252, 0.25);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.runtime-panel {
+  margin-top: 18px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.runtime-title {
+  color: #93c5fd;
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.runtime-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.runtime-item {
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(96, 165, 250, 0.25);
+  border-radius: 14px;
+  padding: 10px 14px;
+  min-width: 110px;
+}
+
+.runtime-label {
+  display: block;
+  color: #93c5fd;
+  font-size: 0.82rem;
+  margin-bottom: 4px;
+}
+
+.runtime-value {
+  color: #f8fafc;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.runtime-hint {
+  margin-top: 12px;
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .syntax-pill-row {
