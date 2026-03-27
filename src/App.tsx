@@ -6,6 +6,7 @@ type PageType =
   | 'home'
   | 'intro' | 'venn' | 'two-set' | 'three-set' | 'practice'  // 容斥原理
   | 'sp-intro' | 'sp-concept' | 'sp-basic' | 'sp-forbidden' | 'sp-mustpass' | 'sp-special' | 'sp-practice'  // 标数法
+  | 'loop-intro' | 'loop-syntax' | 'loop-process' | 'loop-example' | 'loop-practice'
 
 // ========== 动画组件 ==========
 const FadeIn = ({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) => {
@@ -34,8 +35,19 @@ const Star = ({ style }: { style: React.CSSProperties }) => (
   </div>
 )
 
+const LessonCode = ({ lines, activeLine = -1 }: { lines: string[], activeLine?: number }) => (
+  <div className="code-board">
+    {lines.map((line, index) => (
+      <div key={`${index}-${line}`} className={`code-line ${activeLine === index ? 'active' : ''}`}>
+        <span className="code-index">{index + 1}</span>
+        <code>{line}</code>
+      </div>
+    ))}
+  </div>
+)
+
 // ========== 首页目录 ==========
-const HomePage = ({ onSelect }: { onSelect: (topic: string) => void }) => (
+const HomePage = ({ onSelect }: { onSelect: (page: PageType) => void }) => (
   <div className="page home-page">
     <div className="stars-container">
       <Star style={{ top: '10%', left: '15%', animationDelay: '0s' }} />
@@ -59,17 +71,23 @@ const HomePage = ({ onSelect }: { onSelect: (topic: string) => void }) => (
 
     <FadeIn delay={900}>
       <div className="topic-cards">
-        <div className="topic-card" onClick={() => onSelect('inclusion')}>
+        <div className="topic-card" onClick={() => onSelect('intro')}>
           <div className="topic-icon">🔢</div>
           <h3>容斥原理</h3>
           <p>学会用韦恩图数清重叠的东西</p>
           <span className="topic-tag">计数方法</span>
         </div>
-        <div className="topic-card" onClick={() => onSelect('shortest-path')}>
+        <div className="topic-card" onClick={() => onSelect('sp-intro')}>
           <div className="topic-icon">🗺️</div>
           <h3>最短路线标数法</h3>
           <p>用标数法找到所有最短路线</p>
           <span className="topic-tag">路径规划</span>
+        </div>
+        <div className="topic-card" onClick={() => onSelect('loop-intro')}>
+          <div className="topic-icon">🔁</div>
+          <h3>C++ 循环入门</h3>
+          <p>用动画看懂 for 循环怎么一遍遍执行</p>
+          <span className="topic-tag">编程启蒙</span>
         </div>
       </div>
     </FadeIn>
@@ -1015,6 +1033,330 @@ const SPPracticePage = ({ onBack, onHome }: { onBack: () => void, onHome: () => 
   )
 }
 
+const LoopIntroPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => (
+  <div className="page">
+    <button className="back-btn" onClick={onBack}>← 返回目录</button>
+    <FadeIn><h2 className="page-title"><span className="emoji">🔁</span>C++ 循环是什么？</h2></FadeIn>
+
+    <FadeIn delay={300}>
+      <div className="story-box">
+        <div className="story-icon">🤖</div>
+        <p>如果机器人要连续说 5 次“你好”，一条一条写会很麻烦，这时就可以请循环来帮忙！</p>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={600}>
+      <div className="concept-box">
+        <p><strong>循环</strong>就是：把一件事<strong>重复做很多次</strong>。</p>
+        <div className="concept-list">
+          <span className="concept-item">🎯 先决定做几次</span>
+          <span className="concept-item">▶️ 每次执行同样动作</span>
+          <span className="concept-item">🛑 次数到了就停止</span>
+        </div>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={900}>
+      <div className="syntax-pill-row">
+        <div className="syntax-pill">第 1 次</div>
+        <div className="syntax-pill">第 2 次</div>
+        <div className="syntax-pill">第 3 次</div>
+        <div className="syntax-pill">第 4 次</div>
+        <div className="syntax-pill">第 5 次</div>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={1200}>
+      <div className="tip-box">
+        <span className="tip-icon">💡</span>
+        <p>在 C++ 里，最常见的循环写法就是 <strong>for 循环</strong>。</p>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={1500}>
+      <button className="next-btn" onClick={onNext}>学习基本语法 →</button>
+    </FadeIn>
+  </div>
+)
+
+const LoopSyntaxPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => (
+  <div className="page">
+    <button className="back-btn" onClick={onBack}>← 返回目录</button>
+    <FadeIn><h2 className="page-title"><span className="emoji">🧩</span>for 循环基本语法</h2></FadeIn>
+
+    <FadeIn delay={300}>
+      <LessonCode
+        lines={[
+          'for (int i = 1; i <= 5; i++) {',
+          '  cout << "你好";',
+          '}',
+        ]}
+        activeLine={0}
+      />
+    </FadeIn>
+
+    <FadeIn delay={600}>
+      <div className="loop-flow-grid">
+        <div className="loop-flow-card">
+          <h4>① 起点</h4>
+          <p><strong>int i = 1</strong></p>
+          <p>先让 i 从 1 开始。</p>
+        </div>
+        <div className="loop-flow-card">
+          <h4>② 条件</h4>
+          <p><strong>i &lt;= 5</strong></p>
+          <p>只要还没超过 5，就继续。</p>
+        </div>
+        <div className="loop-flow-card">
+          <h4>③ 动作</h4>
+          <p><strong>cout &lt;&lt; "你好"</strong></p>
+          <p>每次循环要做的事。</p>
+        </div>
+        <div className="loop-flow-card">
+          <h4>④ 变化</h4>
+          <p><strong>i++</strong></p>
+          <p>做完一次后，i 增加 1。</p>
+        </div>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={900}>
+      <div className="rule-box">
+        <p><strong>一句话记忆：</strong></p>
+        <p className="rhyme">先定起点，看条件，做动作，再往下一个数走。</p>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={1200}>
+      <button className="next-btn" onClick={onNext}>看动画执行过程 →</button>
+    </FadeIn>
+  </div>
+)
+
+const LoopProcessPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => {
+  const [step, setStep] = useState(1)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setStep((current) => current >= 6 ? 1 : current + 1)
+    }, 1100)
+    return () => clearInterval(timer)
+  }, [])
+
+  const currentPot = step <= 5 ? step : 0
+  const description = step <= 5
+    ? `现在 i = ${step}，条件成立，机器人正在给第 ${step} 盆花浇水。`
+    : '当 i = 6 时，条件不成立，循环结束，机器人停下来了。'
+
+  return (
+    <div className="page">
+      <button className="back-btn" onClick={onBack}>← 返回目录</button>
+      <FadeIn><h2 className="page-title"><span className="emoji">🎬</span>循环怎么一遍遍执行？</h2></FadeIn>
+
+      <FadeIn delay={300}>
+        <LessonCode
+          lines={[
+            'for (int i = 1; i <= 5; i++) {',
+            '  给第 i 盆花浇水;',
+            '}',
+          ]}
+          activeLine={step <= 5 ? 1 : 0}
+        />
+      </FadeIn>
+
+      <FadeIn delay={600}>
+        <div className="loop-runner">
+          <div className="counter-row">
+            {Array.from({ length: 5 }, (_, index) => {
+              const value = index + 1
+              const state = value < currentPot ? 'done' : value === currentPot ? 'current' : 'pending'
+              return <div key={value} className={`counter-chip ${state}`}>{value}</div>
+            })}
+          </div>
+
+          <div className="pot-grid">
+            {Array.from({ length: 5 }, (_, index) => {
+              const value = index + 1
+              const watered = step > 5 || value < currentPot
+              const active = value === currentPot
+              return (
+                <div key={value} className={`pot-card ${watered ? 'done' : ''} ${active ? 'current' : ''}`}>
+                  <div className="pot-emoji">{active ? '💧' : watered ? '🌼' : '🪴'}</div>
+                  <div>第 {value} 盆</div>
+                </div>
+              )
+            })}
+          </div>
+
+          <p className="loop-status">{description}</p>
+          <button className="retry-btn" onClick={() => setStep(1)}>重新播放</button>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={900}>
+        <button className="next-btn" onClick={onNext}>看实际案例 →</button>
+      </FadeIn>
+    </div>
+  )
+}
+
+const LoopExamplePage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => {
+  const scores = [1, 2, 3, 4, 5]
+  const [step, setStep] = useState(0)
+  const total = scores.slice(0, step).reduce((sum, value) => sum + value, 0)
+
+  return (
+    <div className="page">
+      <button className="back-btn" onClick={onBack}>← 返回目录</button>
+      <FadeIn><h2 className="page-title"><span className="emoji">🌟</span>实际案例：一周积分统计</h2></FadeIn>
+
+      <FadeIn delay={300}>
+        <div className="example-box">
+          <h3>📋 故事</h3>
+          <p>小熊连续 5 天完成编程练习，分别得到 1、2、3、4、5 颗星星，怎样用循环快速算出总分？</p>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={600}>
+        <LessonCode
+          lines={[
+            'int sum = 0;',
+            'for (int i = 1; i <= 5; i++) {',
+            '  sum = sum + i;',
+            '}',
+            'cout << sum;',
+          ]}
+          activeLine={step === 0 ? 0 : step <= 5 ? 2 : 4}
+        />
+      </FadeIn>
+
+      <FadeIn delay={900}>
+        <div className="sum-track">
+          {scores.map((value, index) => (
+            <div key={value} className={`sum-badge ${index < step ? 'active' : ''}`}>+ {value}</div>
+          ))}
+        </div>
+        <div className="answer-box">
+          <span className="answer-icon">🧮</span>
+          <p>当前总分：<strong>{total}</strong></p>
+          <p>{step < 5 ? `再执行 ${5 - step} 次循环，就能把后面的分数都加进去。` : '循环全部执行完毕，sum 里就保存着答案。'}</p>
+        </div>
+        <button className="next-btn" onClick={() => step < 5 ? setStep(step + 1) : onNext()}>
+          {step < 5 ? '执行下一次循环 →' : '开始练习 →'}
+        </button>
+      </FadeIn>
+    </div>
+  )
+}
+
+const LoopPracticePage = ({ onBack, onHome }: { onBack: () => void, onHome: () => void }) => {
+  const problems = [
+    {
+      title: '① 识别循环次数',
+      question: '下面哪一句表示“从 1 数到 5，一共执行 5 次”？',
+      options: [
+        'for (int i = 1; i <= 5; i++)',
+        'for (int i = 5; i <= 1; i++)',
+        'for (int i = 1; i <= 5; i--)',
+      ],
+      answer: 0,
+      explanation: 'i 从 1 开始，每次加 1，直到 5，正好执行 5 次。',
+    },
+    {
+      title: '② 判断循环动作',
+      question: '如果 for 循环里写的是 cout << "Hi";，每次循环会发生什么？',
+      options: [
+        '只输出一次 Hi',
+        '每次循环都输出一次 Hi',
+        '什么也不会输出',
+      ],
+      answer: 1,
+      explanation: '循环体里的语句会在每次循环时都执行一次。',
+    },
+    {
+      title: '③ 理解累加结果',
+      question: '执行 1 + 2 + 3 + 4 之后，sum 最后是多少？',
+      options: ['8', '9', '10'],
+      answer: 2,
+      explanation: '1 + 2 + 3 + 4 = 10，所以最后 sum 是 10。',
+    },
+  ]
+
+  const [current, setCurrent] = useState(0)
+  const [selected, setSelected] = useState<number | null>(null)
+  const [submitted, setSubmitted] = useState(false)
+
+  const problem = problems[current]
+  const isCorrect = selected === problem.answer
+
+  const nextProblem = () => {
+    if (current < problems.length - 1) {
+      setCurrent(current + 1)
+      setSelected(null)
+      setSubmitted(false)
+    }
+  }
+
+  return (
+    <div className="page">
+      <button className="back-btn" onClick={onBack}>← 返回目录</button>
+      <FadeIn><h2 className="page-title"><span className="emoji">🎮</span>循环小练习</h2></FadeIn>
+
+      <FadeIn delay={300}>
+        <div className="example-box">
+          <h3>📋 题目 {current + 1}/{problems.length}</h3>
+          <p>{problem.title}</p>
+          <p>{problem.question}</p>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={600}>
+        <div className="quiz-options">
+          {problem.options.map((option, index) => (
+            <button
+              key={option}
+              className={`quiz-option ${selected === index ? 'selected' : ''} ${submitted && index === problem.answer ? 'correct' : ''} ${submitted && selected === index && !isCorrect ? 'wrong' : ''}`}
+              onClick={() => !submitted && setSelected(index)}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={900}>
+        {!submitted ? (
+          <button className="submit-btn" onClick={() => setSubmitted(true)} disabled={selected === null}>提交答案</button>
+        ) : (
+          <div className={`result-box ${isCorrect ? 'correct' : 'wrong'}`}>
+            <span className="result-icon">{isCorrect ? '🎉' : '🤔'}</span>
+            <p>{isCorrect ? '答对了！' : '这题先记住哦！'}</p>
+            <p className="explanation">{problem.explanation}</p>
+            {current < problems.length - 1 ? (
+              <button className="next-btn" onClick={nextProblem}>下一题 →</button>
+            ) : (
+              <button className="restart-btn" onClick={onHome}>✅ 完成学习</button>
+            )}
+          </div>
+        )}
+      </FadeIn>
+
+      {current === problems.length - 1 && submitted && (
+        <FadeIn delay={1200}>
+          <div className="summary-box">
+            <h3>📚 今天学的知识</h3>
+            <ul>
+              <li>循环 = 重复执行同一组动作</li>
+              <li>for 语法包含起点、条件、动作和变化</li>
+              <li>循环可以帮我们快速做重复计算</li>
+            </ul>
+          </div>
+        </FadeIn>
+      )}
+    </div>
+  )
+}
+
 // ========== 主应用 ==========
 function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('home')
@@ -1024,13 +1366,15 @@ function App() {
 
   const iePages: PageType[] = ['intro', 'venn', 'two-set', 'three-set', 'practice']
   const spPages: PageType[] = ['sp-intro', 'sp-concept', 'sp-basic', 'sp-forbidden', 'sp-mustpass', 'sp-special', 'sp-practice']
+  const loopPages: PageType[] = ['loop-intro', 'loop-syntax', 'loop-process', 'loop-example', 'loop-practice']
   const isInclusion = iePages.includes(currentPage)
   const isShortestPath = spPages.includes(currentPage)
-  const progressPages = isInclusion ? iePages : isShortestPath ? spPages : []
+  const isLoop = loopPages.includes(currentPage)
+  const progressPages = isInclusion ? iePages : isShortestPath ? spPages : isLoop ? loopPages : []
 
   return (
     <div className="app">
-      {currentPage === 'home' && <HomePage onSelect={(t) => goTo(t === 'inclusion' ? 'intro' : 'sp-intro')} />}
+      {currentPage === 'home' && <HomePage onSelect={goTo} />}
 
       {/* 容斥原理 */}
       {currentPage === 'intro' && <IntroPage onNext={() => goTo('venn')} onBack={goHome} />}
@@ -1047,6 +1391,12 @@ function App() {
       {currentPage === 'sp-mustpass' && <SPMustPassPage onNext={() => goTo('sp-special')} onBack={goHome} />}
       {currentPage === 'sp-special' && <SPSpecialPage onNext={() => goTo('sp-practice')} onBack={goHome} />}
       {currentPage === 'sp-practice' && <SPPracticePage onBack={goHome} onHome={goHome} />}
+
+      {currentPage === 'loop-intro' && <LoopIntroPage onNext={() => goTo('loop-syntax')} onBack={goHome} />}
+      {currentPage === 'loop-syntax' && <LoopSyntaxPage onNext={() => goTo('loop-process')} onBack={goHome} />}
+      {currentPage === 'loop-process' && <LoopProcessPage onNext={() => goTo('loop-example')} onBack={goHome} />}
+      {currentPage === 'loop-example' && <LoopExamplePage onNext={() => goTo('loop-practice')} onBack={goHome} />}
+      {currentPage === 'loop-practice' && <LoopPracticePage onBack={goHome} onHome={goHome} />}
 
       {/* 进度条 */}
       {currentPage !== 'home' && (
