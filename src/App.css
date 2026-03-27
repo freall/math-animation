@@ -1299,6 +1299,204 @@ body {
   background: #fef2f2;
 }
 
+.sort-algo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 20px;
+  margin: 25px 0;
+}
+
+.sort-algo-card {
+  background: white;
+  border: 3px solid #c7d2fe;
+  border-radius: 22px;
+  padding: 22px 20px;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.14);
+  text-align: center;
+}
+
+.sort-algo-card h3 {
+  color: var(--primary);
+  margin-bottom: 10px;
+}
+
+.sort-algo-card p {
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+
+.sort-algo-emoji {
+  font-size: 2.6rem;
+  margin-bottom: 12px;
+}
+
+.sort-story {
+  color: #6b7280 !important;
+  margin-top: 10px;
+}
+
+.sort-selector {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin: 25px 0;
+}
+
+.sort-tab {
+  border: 3px solid #cbd5e1;
+  background: white;
+  color: var(--text-dark);
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+}
+
+.sort-tab.active {
+  background: linear-gradient(135deg, #c7d2fe 0%, #ddd6fe 100%);
+  border-color: #8b5cf6;
+  color: #5b21b6;
+}
+
+.sort-visual-box {
+  background: linear-gradient(135deg, #eff6ff 0%, #eef2ff 100%);
+  padding: 24px;
+  border-radius: 24px;
+  border: 3px solid #93c5fd;
+  margin: 25px 0;
+}
+
+.sorting-bars {
+  min-height: 250px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 14px;
+  padding: 20px 0 10px;
+}
+
+.sorting-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.sorting-bar {
+  width: 62px;
+  max-width: 16vw;
+  border-radius: 18px 18px 10px 10px;
+  background: linear-gradient(180deg, #93c5fd 0%, #3b82f6 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10px;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.24);
+  transition: all 0.25s ease;
+}
+
+.sorting-bar.comparing {
+  background: linear-gradient(180deg, #fde68a 0%, #f59e0b 100%);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.24);
+}
+
+.sorting-bar.swapping {
+  background: linear-gradient(180deg, #fda4af 0%, #ef4444 100%);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.24);
+}
+
+.sorting-bar.selected {
+  background: linear-gradient(180deg, #ddd6fe 0%, #8b5cf6 100%);
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.24);
+}
+
+.sorting-bar.sorted {
+  background: linear-gradient(180deg, #86efac 0%, #22c55e 100%);
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.24);
+}
+
+.sorting-index {
+  color: #475569;
+  font-size: 0.95rem;
+  font-weight: bold;
+}
+
+.sort-legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 18px;
+  color: var(--text-dark);
+  font-size: 0.95rem;
+}
+
+.sort-legend span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-dot.comparing {
+  background: #f59e0b;
+}
+
+.legend-dot.swapping {
+  background: #ef4444;
+}
+
+.legend-dot.selected {
+  background: #8b5cf6;
+}
+
+.legend-dot.sorted {
+  background: #22c55e;
+}
+
+.sort-controls {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.speed-switch {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.speed-chip {
+  border: none;
+  background: white;
+  color: #475569;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  font-family: inherit;
+}
+
+.speed-chip.active {
+  background: #312e81;
+  color: white;
+}
+
 /* ================================
    下一步按钮
    ================================ */
@@ -1384,6 +1582,18 @@ body {
 
   .segment-arrow {
     transform: rotate(90deg);
+  }
+
+  .sort-controls {
+    flex-direction: column;
+  }
+
+  .sorting-bar {
+    width: 48px;
+  }
+
+  .code-badges {
+    padding-left: 0;
   }
 }
 

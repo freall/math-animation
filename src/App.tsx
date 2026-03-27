@@ -7,6 +7,7 @@ type PageType =
   | 'intro' | 'venn' | 'two-set' | 'three-set' | 'practice'  // 容斥原理
   | 'sp-intro' | 'sp-concept' | 'sp-basic' | 'sp-forbidden' | 'sp-mustpass' | 'sp-special' | 'sp-practice'  // 标数法
   | 'loop-intro' | 'loop-syntax' | 'loop-process' | 'loop-example' | 'loop-practice'
+  | 'sort-intro' | 'sort-algos' | 'sort-visual' | 'sort-example' | 'sort-practice'
 
 // ========== 动画组件 ==========
 const FadeIn = ({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) => {
@@ -132,6 +133,12 @@ const HomePage = ({ onSelect }: { onSelect: (page: PageType) => void }) => (
           <h3>C++ 循环入门</h3>
           <p>用动画看懂 for 循环怎么一遍遍执行</p>
           <span className="topic-tag">编程启蒙</span>
+        </div>
+        <div className="topic-card" onClick={() => onSelect('sort-intro')}>
+          <div className="topic-icon">📊</div>
+          <h3>C++ 排序算法</h3>
+          <p>看数字怎样交换位置，慢慢排成整齐队伍</p>
+          <span className="topic-tag">算法启蒙</span>
         </div>
       </div>
     </FadeIn>
@@ -1489,6 +1496,624 @@ const LoopPracticePage = ({ onBack, onHome }: { onBack: () => void, onHome: () =
   )
 }
 
+type SortAlgorithm = 'bubble' | 'selection' | 'insertion'
+type SortAction = 'start' | 'compare' | 'swap' | 'select-min' | 'pick-key' | 'shift' | 'insert' | 'mark-sorted' | 'done'
+
+type SortStep = {
+  array: number[]
+  action: SortAction
+  activeLine: number
+  message: string
+  comparing?: number[]
+  swapping?: number[]
+  selected?: number[]
+  sortedIndices?: number[]
+  runtimeBadges: RuntimeBadge[]
+  lineBadges?: Record<number, RuntimeBadge[]>
+}
+
+const SORT_LESSONS: Record<SortAlgorithm, {
+  title: string
+  emoji: string
+  desc: string
+  story: string
+  codeLines: string[]
+}> = {
+  bubble: {
+    title: '冒泡排序',
+    emoji: '🫧',
+    desc: '每次比较相邻两个数，把更大的数慢慢推到右边。',
+    story: '像大气泡一轮一轮浮到水面，最大的数也会慢慢走到队伍最后面。',
+    codeLines: [
+      'for (int end = n - 1; end > 0; end--) {',
+      '  for (int j = 0; j < end; j++) {',
+      '    if (a[j] > a[j + 1]) {',
+      '      swap(a[j], a[j + 1]);',
+      '    }',
+      '  }',
+      '}',
+    ],
+  },
+  selection: {
+    title: '选择排序',
+    emoji: '🔎',
+    desc: '每一轮都在后面找一个最小的数，换到前面来。',
+    story: '像老师从队伍里挑出最矮的小朋友，请他站到最前面。',
+    codeLines: [
+      'for (int i = 0; i < n - 1; i++) {',
+      '  int minIndex = i;',
+      '  for (int j = i + 1; j < n; j++) {',
+      '    if (a[j] < a[minIndex]) {',
+      '      minIndex = j;',
+      '    }',
+      '  }',
+      '  swap(a[i], a[minIndex]);',
+      '}',
+    ],
+  },
+  insertion: {
+    title: '插入排序',
+    emoji: '🧩',
+    desc: '每次拿起一个数，插进前面已经排好的队伍里。',
+    story: '像整理扑克牌，把新拿到的一张牌插进前面已经排好的位置。',
+    codeLines: [
+      'for (int i = 1; i < n; i++) {',
+      '  int key = a[i];',
+      '  int j = i - 1;',
+      '  while (j >= 0 && a[j] > key) {',
+      '    a[j + 1] = a[j];',
+      '    j--;',
+      '  }',
+      '  a[j + 1] = key;',
+      '}',
+    ],
+  },
+}
+
+const cloneSortArray = (array: number[]) => [...array]
+
+const pushSortStep = (steps: SortStep[], array: number[], step: Omit<SortStep, 'array'>) => {
+  steps.push({
+    array: cloneSortArray(array),
+    ...step,
+  })
+}
+
+const generateBubbleSteps = (input: number[]) => {
+  const array = cloneSortArray(input)
+  const steps: SortStep[] = []
+  const sortedIndices: number[] = []
+
+  pushSortStep(steps, array, {
+    action: 'start',
+    activeLine: 0,
+    message: '先确定无序区域的右边界，从队伍最后开始安排。',
+    sortedIndices: [],
+    runtimeBadges: [{ label: 'end', value: `${array.length - 1}` }],
+    lineBadges: { 0: [{ label: 'end', value: `${array.length - 1}` }] },
+  })
+
+  for (let end = array.length - 1; end > 0; end--) {
+    for (let j = 0; j < end; j++) {
+      pushSortStep(steps, array, {
+        action: 'compare',
+        activeLine: 2,
+        message: `比较第 ${j + 1} 个和第 ${j + 2} 个数。`,
+        comparing: [j, j + 1],
+        sortedIndices: [...sortedIndices],
+        runtimeBadges: [{ label: 'end', value: `${end}` }, { label: 'j', value: `${j}` }],
+        lineBadges: {
+          0: [{ label: 'end', value: `${end}` }],
+          1: [{ label: 'j', value: `${j}` }],
+          2: [{ label: '比较', value: `${array[j]} > ${array[j + 1]}` }],
+        },
+      })
+
+      if (array[j] > array[j + 1]) {
+        ;[array[j], array[j + 1]] = [array[j + 1], array[j]]
+        pushSortStep(steps, array, {
+          action: 'swap',
+          activeLine: 3,
+          message: `左边更大，交换两个数的位置。`,
+          swapping: [j, j + 1],
+          sortedIndices: [...sortedIndices],
+          runtimeBadges: [{ label: 'end', value: `${end}` }, { label: 'j', value: `${j}` }],
+          lineBadges: {
+            3: [{ label: 'swap', value: `${array[j]} 和 ${array[j + 1]}` }],
+          },
+        })
+      }
+    }
+
+    sortedIndices.unshift(end)
+    pushSortStep(steps, array, {
+      action: 'mark-sorted',
+      activeLine: 0,
+      message: `这一轮结束，位置 ${end + 1} 上的数已经排好了。`,
+      sortedIndices: [...sortedIndices],
+      runtimeBadges: [{ label: '已排好', value: `${sortedIndices.length} 个` }],
+      lineBadges: { 0: [{ label: 'end', value: `${end - 1}` }] },
+    })
+  }
+
+  pushSortStep(steps, array, {
+    action: 'done',
+    activeLine: 6,
+    message: '冒泡排序完成，所有数字都从小到大站好了。',
+    sortedIndices: Array.from({ length: array.length }, (_, index) => index),
+    runtimeBadges: [{ label: '状态', value: '完成' }],
+  })
+
+  return steps
+}
+
+const generateSelectionSteps = (input: number[]) => {
+  const array = cloneSortArray(input)
+  const steps: SortStep[] = []
+  const sortedIndices: number[] = []
+
+  for (let i = 0; i < array.length - 1; i++) {
+    let minIndex = i
+    pushSortStep(steps, array, {
+      action: 'select-min',
+      activeLine: 1,
+      message: `先把第 ${i + 1} 个数当成当前最小值。`,
+      selected: [minIndex],
+      sortedIndices: [...sortedIndices],
+      runtimeBadges: [{ label: 'i', value: `${i}` }, { label: 'minIndex', value: `${minIndex}` }],
+      lineBadges: { 1: [{ label: 'minIndex', value: `${minIndex}` }] },
+    })
+
+    for (let j = i + 1; j < array.length; j++) {
+      pushSortStep(steps, array, {
+        action: 'compare',
+        activeLine: 3,
+        message: `看看第 ${j + 1} 个数会不会更小。`,
+        comparing: [minIndex, j],
+        selected: [minIndex],
+        sortedIndices: [...sortedIndices],
+        runtimeBadges: [{ label: 'i', value: `${i}` }, { label: 'j', value: `${j}` }, { label: 'minIndex', value: `${minIndex}` }],
+        lineBadges: {
+          2: [{ label: 'j', value: `${j}` }],
+          3: [{ label: '比较', value: `${array[j]} < ${array[minIndex]}` }],
+        },
+      })
+
+      if (array[j] < array[minIndex]) {
+        minIndex = j
+        pushSortStep(steps, array, {
+          action: 'select-min',
+          activeLine: 4,
+          message: `找到新的最小值，它现在站在第 ${minIndex + 1} 个位置。`,
+          selected: [minIndex],
+          sortedIndices: [...sortedIndices],
+          runtimeBadges: [{ label: 'i', value: `${i}` }, { label: 'minIndex', value: `${minIndex}` }],
+          lineBadges: { 4: [{ label: 'minIndex', value: `${minIndex}` }] },
+        })
+      }
+    }
+
+    ;[array[i], array[minIndex]] = [array[minIndex], array[i]]
+    sortedIndices.push(i)
+    pushSortStep(steps, array, {
+      action: 'swap',
+      activeLine: 7,
+      message: '把这一轮找到的最小值交换到前面来。',
+      swapping: [i, minIndex],
+      sortedIndices: [...sortedIndices],
+      runtimeBadges: [{ label: 'i', value: `${i}` }, { label: 'minIndex', value: `${minIndex}` }],
+      lineBadges: { 7: [{ label: 'swap', value: `${i} ↔ ${minIndex}` }] },
+    })
+  }
+
+  pushSortStep(steps, array, {
+    action: 'done',
+    activeLine: 8,
+    message: '选择排序完成，前面的位置一个个都安排好了。',
+    sortedIndices: Array.from({ length: array.length }, (_, index) => index),
+    runtimeBadges: [{ label: '状态', value: '完成' }],
+  })
+
+  return steps
+}
+
+const generateInsertionSteps = (input: number[]) => {
+  const array = cloneSortArray(input)
+  const steps: SortStep[] = []
+
+  pushSortStep(steps, array, {
+    action: 'start',
+    activeLine: 0,
+    message: '第 1 个数先自己站好，后面的数一个个插进来。',
+    sortedIndices: [0],
+    runtimeBadges: [{ label: 'i', value: '1' }],
+  })
+
+  for (let i = 1; i < array.length; i++) {
+    const key = array[i]
+    let j = i - 1
+
+    pushSortStep(steps, array, {
+      action: 'pick-key',
+      activeLine: 1,
+      message: `拿起数字 ${key}，准备插入前面已经排好的队伍。`,
+      selected: [i],
+      sortedIndices: Array.from({ length: i }, (_, index) => index),
+      runtimeBadges: [{ label: 'i', value: `${i}` }, { label: 'key', value: `${key}` }, { label: 'j', value: `${j}` }],
+      lineBadges: { 1: [{ label: 'key', value: `${key}` }], 2: [{ label: 'j', value: `${j}` }] },
+    })
+
+    while (j >= 0 && array[j] > key) {
+      pushSortStep(steps, array, {
+        action: 'compare',
+        activeLine: 3,
+        message: `比较 ${array[j]} 和 ${key}，看看要不要给 ${key} 腾位置。`,
+        comparing: [j, j + 1],
+        sortedIndices: Array.from({ length: i }, (_, index) => index),
+        runtimeBadges: [{ label: 'i', value: `${i}` }, { label: 'key', value: `${key}` }, { label: 'j', value: `${j}` }],
+        lineBadges: { 3: [{ label: '条件', value: `${array[j]} > ${key}` }] },
+      })
+
+      array[j + 1] = array[j]
+      pushSortStep(steps, array, {
+        action: 'shift',
+        activeLine: 4,
+        message: `${array[j]} 向右移动一格，给 ${key} 留出空位。`,
+        swapping: [j, j + 1],
+        sortedIndices: Array.from({ length: i }, (_, index) => index),
+        runtimeBadges: [{ label: 'i', value: `${i}` }, { label: 'key', value: `${key}` }, { label: 'j', value: `${j}` }],
+        lineBadges: { 4: [{ label: '移动', value: `${array[j]} → 右边` }] },
+      })
+
+      j--
+      pushSortStep(steps, array, {
+        action: 'shift',
+        activeLine: 5,
+        message: `继续往左看，下一个要比较的位置变成 ${j}。`,
+        sortedIndices: Array.from({ length: i }, (_, index) => index),
+        runtimeBadges: [{ label: 'i', value: `${i}` }, { label: 'key', value: `${key}` }, { label: 'j', value: `${j}` }],
+        lineBadges: { 5: [{ label: 'j', value: `${j}` }] },
+      })
+    }
+
+    array[j + 1] = key
+    pushSortStep(steps, array, {
+      action: 'insert',
+      activeLine: 7,
+      message: `${key} 插入成功，它已经站到了正确的位置。`,
+      selected: [j + 1],
+      sortedIndices: Array.from({ length: i + 1 }, (_, index) => index),
+      runtimeBadges: [{ label: 'i', value: `${i}` }, { label: 'key', value: `${key}` }, { label: '插入位置', value: `${j + 1}` }],
+      lineBadges: { 7: [{ label: 'a[j + 1]', value: `${key}` }] },
+    })
+  }
+
+  pushSortStep(steps, array, {
+    action: 'done',
+    activeLine: 8,
+    message: '插入排序完成，整个队伍已经从小到大排整齐。',
+    sortedIndices: Array.from({ length: array.length }, (_, index) => index),
+    runtimeBadges: [{ label: '状态', value: '完成' }],
+  })
+
+  return steps
+}
+
+const generateSortSteps = (algorithm: SortAlgorithm, input: number[]) => {
+  if (algorithm === 'bubble') return generateBubbleSteps(input)
+  if (algorithm === 'selection') return generateSelectionSteps(input)
+  return generateInsertionSteps(input)
+}
+
+const SORT_DEMO_ARRAY = [5, 1, 4, 2, 3]
+
+const SortingBars = ({
+  step,
+}: {
+  step: SortStep
+}) => {
+  const maxValue = Math.max(...step.array)
+
+  return (
+    <div className="sorting-bars">
+      {step.array.map((value, index) => {
+        const isComparing = step.comparing?.includes(index)
+        const isSwapping = step.swapping?.includes(index)
+        const isSelected = step.selected?.includes(index)
+        const isSorted = step.sortedIndices?.includes(index)
+        const className = isSwapping ? 'swapping' : isComparing ? 'comparing' : isSelected ? 'selected' : isSorted ? 'sorted' : ''
+
+        return (
+          <div key={`${index}-${value}-${step.action}`} className="sorting-bar-wrap">
+            <div className={`sorting-bar ${className}`} style={{ height: `${(value / maxValue) * 180 + 40}px` }}>
+              <span>{value}</span>
+            </div>
+            <div className="sorting-index">{index}</div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+const SortIntroPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => (
+  <div className="page">
+    <button className="back-btn" onClick={onBack}>← 返回目录</button>
+    <FadeIn><h2 className="page-title"><span className="emoji">📊</span>C++ 排序算法是什么？</h2></FadeIn>
+    <FadeIn delay={300}>
+      <div className="story-box">
+        <div className="story-icon">🧒</div>
+        <p>如果 5 个数字小朋友站成一排，我们想让它们从小到大站整齐，就需要用到排序算法。</p>
+      </div>
+    </FadeIn>
+    <FadeIn delay={600}>
+      <div className="concept-box">
+        <p><strong>排序</strong>就是：按照一定规则，把一组数重新排好顺序。</p>
+        <div className="concept-list">
+          <span className="concept-item">🔍 先比较</span>
+          <span className="concept-item">🔁 再移动</span>
+          <span className="concept-item">✅ 最后排整齐</span>
+        </div>
+      </div>
+    </FadeIn>
+    <FadeIn delay={900}>
+      <div className="tip-box">
+        <span className="tip-icon">💡</span>
+        <p>在 C++ 里，排序算法经常会用到循环、比较和交换位置。</p>
+      </div>
+    </FadeIn>
+    <FadeIn delay={1200}>
+      <button className="next-btn" onClick={onNext}>认识三种排序方法 →</button>
+    </FadeIn>
+  </div>
+)
+
+const SortAlgosPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => (
+  <div className="page">
+    <button className="back-btn" onClick={onBack}>← 返回目录</button>
+    <FadeIn><h2 className="page-title"><span className="emoji">🧠</span>三种常见排序方法</h2></FadeIn>
+    <FadeIn delay={300}>
+      <div className="sort-algo-grid">
+        {(['bubble', 'selection', 'insertion'] as SortAlgorithm[]).map((algorithm) => {
+          const lesson = SORT_LESSONS[algorithm]
+          return (
+            <div key={algorithm} className="sort-algo-card">
+              <div className="sort-algo-emoji">{lesson.emoji}</div>
+              <h3>{lesson.title}</h3>
+              <p>{lesson.desc}</p>
+              <p className="sort-story">{lesson.story}</p>
+            </div>
+          )
+        })}
+      </div>
+    </FadeIn>
+    <FadeIn delay={600}>
+      <div className="rule-box">
+        <p><strong>学习重点：</strong></p>
+        <p className="rhyme">看谁在比较，看谁在移动，看谁已经站好。</p>
+      </div>
+    </FadeIn>
+    <FadeIn delay={900}>
+      <button className="next-btn" onClick={onNext}>开始动画演示 →</button>
+    </FadeIn>
+  </div>
+)
+
+const SortVisualPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => {
+  const [algorithm, setAlgorithm] = useState<SortAlgorithm>('bubble')
+  const [steps, setSteps] = useState<SortStep[]>(() => generateSortSteps('bubble', SORT_DEMO_ARRAY))
+  const [cursor, setCursor] = useState(0)
+  const [playing, setPlaying] = useState(true)
+  const [speed, setSpeed] = useState(950)
+
+  useEffect(() => {
+    const newSteps = generateSortSteps(algorithm, SORT_DEMO_ARRAY)
+    setSteps(newSteps)
+    setCursor(0)
+    setPlaying(true)
+  }, [algorithm])
+
+  useEffect(() => {
+    if (!playing) return
+    if (cursor >= steps.length - 1) return
+    const timer = setTimeout(() => setCursor((current) => current + 1), speed)
+    return () => clearTimeout(timer)
+  }, [playing, cursor, steps, speed])
+
+  const currentStep = steps[Math.min(cursor, steps.length - 1)]
+  const lesson = SORT_LESSONS[algorithm]
+  const isFinished = cursor >= steps.length - 1
+
+  return (
+    <div className="page">
+      <button className="back-btn" onClick={onBack}>← 返回目录</button>
+      <FadeIn><h2 className="page-title"><span className="emoji">🎬</span>代码和动画一起看排序</h2></FadeIn>
+      <FadeIn delay={300}>
+        <div className="sort-selector">
+          {(['bubble', 'selection', 'insertion'] as SortAlgorithm[]).map((item) => (
+            <button key={item} className={`sort-tab ${item === algorithm ? 'active' : ''}`} onClick={() => setAlgorithm(item)}>
+              {SORT_LESSONS[item].emoji} {SORT_LESSONS[item].title}
+            </button>
+          ))}
+        </div>
+      </FadeIn>
+      <FadeIn delay={500}>
+        <div className="tip-box">
+          <span className="tip-icon">{lesson.emoji}</span>
+          <p>{lesson.story}</p>
+        </div>
+      </FadeIn>
+      <FadeIn delay={700}>
+        <LessonCode
+          lines={lesson.codeLines}
+          activeLine={currentStep.activeLine}
+          lineBadges={currentStep.lineBadges}
+          runtimeBadges={currentStep.runtimeBadges}
+          runtimeTitle="这一行执行时，变量是多少？"
+          runtimeHint={currentStep.message}
+        />
+      </FadeIn>
+      <FadeIn delay={900}>
+        <div className="sort-visual-box">
+          <SortingBars step={currentStep} />
+          <div className="sort-legend">
+            <span><i className="legend-dot comparing"></i>正在比较</span>
+            <span><i className="legend-dot swapping"></i>正在移动</span>
+            <span><i className="legend-dot selected"></i>当前重点</span>
+            <span><i className="legend-dot sorted"></i>已经排好</span>
+          </div>
+          <div className="sort-controls">
+            <button className="nav-btn" onClick={() => { setPlaying(false); setCursor(0) }}>重新开始</button>
+            <button className="nav-btn" onClick={() => setPlaying((value) => !value)}>{playing && !isFinished ? '暂停' : '播放'}</button>
+            <button className="nav-btn" onClick={() => { setPlaying(false); setCursor((value) => Math.min(value + 1, steps.length - 1)) }} disabled={isFinished}>下一步</button>
+          </div>
+          <div className="speed-switch">
+            {[1300, 950, 650].map((value, index) => (
+              <button key={value} className={`speed-chip ${speed === value ? 'active' : ''}`} onClick={() => setSpeed(value)}>
+                {['慢速', '中速', '快速'][index]}
+              </button>
+            ))}
+          </div>
+        </div>
+      </FadeIn>
+      <FadeIn delay={1200}>
+        <button className="next-btn" onClick={onNext}>看生活案例 →</button>
+      </FadeIn>
+    </div>
+  )
+}
+
+const SortExamplePage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => (
+  <div className="page">
+    <button className="back-btn" onClick={onBack}>← 返回目录</button>
+    <FadeIn><h2 className="page-title"><span className="emoji">📚</span>实际案例：整理分数卡片</h2></FadeIn>
+    <FadeIn delay={300}>
+      <div className="example-box">
+        <h3>📋 场景</h3>
+        <p>老师把 5 张分数卡片放在桌上：95、68、82、74、88，想从小到大排好，方便大家一眼看出名次。</p>
+      </div>
+    </FadeIn>
+    <FadeIn delay={600}>
+      <LessonCode
+        lines={[
+          'vector<int> scores = {95, 68, 82, 74, 88};',
+          'for (int end = scores.size() - 1; end > 0; end--) {',
+          '  for (int j = 0; j < end; j++) {',
+          '    if (scores[j] > scores[j + 1]) {',
+          '      swap(scores[j], scores[j + 1]);',
+          '    }',
+          '  }',
+          '}',
+        ]}
+        activeLine={3}
+        runtimeBadges={[
+          { label: '当前比较', value: '95 和 68' },
+          { label: '要做什么', value: '交换位置' },
+        ]}
+        runtimeTitle="老师现在看到的值"
+        runtimeHint="如果前面的分数更大，就把它往后换，让更小的分数慢慢来到前面。"
+      />
+    </FadeIn>
+    <FadeIn delay={900}>
+      <div className="answer-box">
+        <span className="answer-icon">✨</span>
+        <p>排序后得到：<strong>68，74，82，88，95</strong></p>
+        <p>这样不但更整齐，也更容易比较大小。</p>
+      </div>
+    </FadeIn>
+    <FadeIn delay={1200}>
+      <button className="next-btn" onClick={onNext}>开始练习 →</button>
+    </FadeIn>
+  </div>
+)
+
+const SortPracticePage = ({ onBack, onHome }: { onBack: () => void, onHome: () => void }) => {
+  const questions = [
+    {
+      title: '① 比较的作用',
+      question: '排序时，为什么要先比较两个数？',
+      options: ['为了知道谁应该站前面', '为了把数字变大', '为了让数组变长'],
+      answer: 0,
+      explanation: '比较大小后，程序才知道谁应该往前、谁应该往后。',
+    },
+    {
+      title: '② 冒泡排序特点',
+      question: '冒泡排序每一轮最容易先确定的是哪一边？',
+      options: ['最左边', '最右边', '中间'],
+      answer: 1,
+      explanation: '每轮比较后，较大的数会慢慢跑到右边，所以最右边会先确定。',
+    },
+    {
+      title: '③ 插入排序想法',
+      question: '插入排序最像下面哪件事？',
+      options: ['从头再写一遍数字', '把一张牌插进已排好的扑克牌里', '把所有数都删掉'],
+      answer: 1,
+      explanation: '插入排序就是把当前数字插进前面已经有序的部分里。',
+    },
+  ]
+
+  const [current, setCurrent] = useState(0)
+  const [selected, setSelected] = useState<number | null>(null)
+  const [submitted, setSubmitted] = useState(false)
+  const currentQuestion = questions[current]
+  const isCorrect = selected === currentQuestion.answer
+
+  return (
+    <div className="page">
+      <button className="back-btn" onClick={onBack}>← 返回目录</button>
+      <FadeIn><h2 className="page-title"><span className="emoji">🎯</span>排序算法小练习</h2></FadeIn>
+      <FadeIn delay={300}>
+        <div className="example-box">
+          <h3>📋 题目 {current + 1}/{questions.length}</h3>
+          <p>{currentQuestion.title}</p>
+          <p>{currentQuestion.question}</p>
+        </div>
+      </FadeIn>
+      <FadeIn delay={600}>
+        <div className="quiz-options">
+          {currentQuestion.options.map((option, index) => (
+            <button
+              key={option}
+              className={`quiz-option ${selected === index ? 'selected' : ''} ${submitted && index === currentQuestion.answer ? 'correct' : ''} ${submitted && selected === index && !isCorrect ? 'wrong' : ''}`}
+              onClick={() => !submitted && setSelected(index)}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </FadeIn>
+      <FadeIn delay={900}>
+        {!submitted ? (
+          <button className="submit-btn" onClick={() => setSubmitted(true)} disabled={selected === null}>提交答案</button>
+        ) : (
+          <div className={`result-box ${isCorrect ? 'correct' : 'wrong'}`}>
+            <span className="result-icon">{isCorrect ? '🎉' : '🤔'}</span>
+            <p>{isCorrect ? '答对啦！' : '再记一记这个知识点哦！'}</p>
+            <p className="explanation">{currentQuestion.explanation}</p>
+            {current < questions.length - 1 ? (
+              <button className="next-btn" onClick={() => { setCurrent(current + 1); setSelected(null); setSubmitted(false) }}>下一题 →</button>
+            ) : (
+              <button className="restart-btn" onClick={onHome}>✅ 完成学习</button>
+            )}
+          </div>
+        )}
+      </FadeIn>
+      {current === questions.length - 1 && submitted && (
+        <FadeIn delay={1200}>
+          <div className="summary-box">
+            <h3>📚 今天学的知识</h3>
+            <ul>
+              <li>排序就是把数字重新排好顺序</li>
+              <li>排序算法常常依靠比较、移动和交换</li>
+              <li>C++ 可以用循环一步一步完成排序任务</li>
+            </ul>
+          </div>
+        </FadeIn>
+      )}
+    </div>
+  )
+}
+
 // ========== 主应用 ==========
 function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('home')
@@ -1499,10 +2124,12 @@ function App() {
   const iePages: PageType[] = ['intro', 'venn', 'two-set', 'three-set', 'practice']
   const spPages: PageType[] = ['sp-intro', 'sp-concept', 'sp-basic', 'sp-forbidden', 'sp-mustpass', 'sp-special', 'sp-practice']
   const loopPages: PageType[] = ['loop-intro', 'loop-syntax', 'loop-process', 'loop-example', 'loop-practice']
+  const sortPages: PageType[] = ['sort-intro', 'sort-algos', 'sort-visual', 'sort-example', 'sort-practice']
   const isInclusion = iePages.includes(currentPage)
   const isShortestPath = spPages.includes(currentPage)
   const isLoop = loopPages.includes(currentPage)
-  const progressPages = isInclusion ? iePages : isShortestPath ? spPages : isLoop ? loopPages : []
+  const isSort = sortPages.includes(currentPage)
+  const progressPages = isInclusion ? iePages : isShortestPath ? spPages : isLoop ? loopPages : isSort ? sortPages : []
 
   return (
     <div className="app">
@@ -1529,6 +2156,12 @@ function App() {
       {currentPage === 'loop-process' && <LoopProcessPage onNext={() => goTo('loop-example')} onBack={goHome} />}
       {currentPage === 'loop-example' && <LoopExamplePage onNext={() => goTo('loop-practice')} onBack={goHome} />}
       {currentPage === 'loop-practice' && <LoopPracticePage onBack={goHome} onHome={goHome} />}
+
+      {currentPage === 'sort-intro' && <SortIntroPage onNext={() => goTo('sort-algos')} onBack={goHome} />}
+      {currentPage === 'sort-algos' && <SortAlgosPage onNext={() => goTo('sort-visual')} onBack={goHome} />}
+      {currentPage === 'sort-visual' && <SortVisualPage onNext={() => goTo('sort-example')} onBack={goHome} />}
+      {currentPage === 'sort-example' && <SortExamplePage onNext={() => goTo('sort-practice')} onBack={goHome} />}
+      {currentPage === 'sort-practice' && <SortPracticePage onBack={goHome} onHome={goHome} />}
 
       {/* 进度条 */}
       {currentPage !== 'home' && (
