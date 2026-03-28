@@ -2,6 +2,8 @@
 
 这是一个面向儿童的交互式教学网页项目，使用图形、动画、例题和练习，帮助孩子理解数学思维与编程启蒙内容。
 
+项目的长期方向，是把小学信息学奥赛中的 C++ 知识和小学奥数中的核心知识点，逐步建设成一个可持续扩展的动画教学模块库。
+
 ## 当前学习模块
 
 ### 1. 容斥原理
@@ -70,9 +72,14 @@ pnpm build
 ```bash
 .
 ├── .github/workflows/deploy.yml
+├── ENGINEERING_PLAN.md
+├── TODO_ROADMAP.md
 ├── public/
 │   └── 404.html
 ├── src/
+│   ├── course/
+│   │   ├── roadmap.ts
+│   │   └── types.ts
 │   ├── App.tsx
 │   ├── App.css
 │   ├── index.css
@@ -92,6 +99,9 @@ pnpm build
 | `public/404.html` | GitHub Pages 单页应用回退 |
 | `.github/workflows/deploy.yml` | GitHub Pages 自动部署工作流 |
 | `AGENTS.md` | 多代理开发协作规则 |
+| `TODO_ROADMAP.md` | 两大学习方向的模块 TODO 清单 |
+| `ENGINEERING_PLAN.md` | 面向未来扩展的工程规划 |
+| `src/course/roadmap.ts` | 结构化课程路线图与工程里程碑 |
 
 ## 维护规则
 
@@ -101,3 +111,7 @@ pnpm build
 - 先运行 `pnpm lint`
 - 再运行 `pnpm build`
 - 验证通过后执行 commit 与 push
+- 新增模块或调整长期规划时，要同步更新：
+- `TODO_ROADMAP.md`
+- `ENGINEERING_PLAN.md`
+- `src/course/roadmap.ts`
