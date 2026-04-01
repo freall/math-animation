@@ -2221,40 +2221,110 @@ const CmdIntroPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => vo
 }
 
 // 页面2：break 动画页 - Alex 铺路逃岩浆关卡
+// 每次循环拆成 5 个子步：while检查 → if判断 → placeAhead → moveForward → e-=3
 const CmdBreakPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => {
   const MAX_ENERGY = 20
   const COST = 3
   const TRACK_LEN = 8
 
-  const [autoPlay, setAutoPlay] = useState(false)
+  // 运行时状态
+  // 行索引对应代码行（0-based）：
+  //   0: int e = 20;
+  //   1: while(true) {
+  //   2:   if(e <= 0) { break; }
+  //   3:   placeAhead("sand");
+  //   4:   moveForward();
+  //   5:   e -= 3;
+  //   6: }
   const [energy, setEnergy] = useState(MAX_ENERGY)
   const [pos, setPos] = useState(0)
   const [log, setLog] = useState<string[]>([])
   const [done, setDone] = useState(false)
-  const [activeLine, setActiveLine] = useState(-1)
+  const [autoPlay, setAutoPlay] = useState(false)
+  // substep: 0=while检查, 1=if判断, 2=placeAhead, 3=move, 4=e-=3
+  const [substep, setSubstep] = useState(0)
+  const [snapshot, setSnapshot] = useState({ e: MAX_ENERGY, pos: 0, activeLine: -1, hint: '▶ 点击"单步执行"开始' })
+  // tick 驱动 autoPlay，每次 interval 触发时 +1
+  const [tick, setTick] = useState(0)
 
-  const step = () => {
-    setEnergy(e => {
-      const next = e - COST
-      if (next <= 0) {
-        setLog(l => [...l, `精力值 ${e} - ${COST} = ${next} ≤ 0，break！停止劳动。`])
-        setDone(true)
-        setAutoPlay(false)
-        setActiveLine(2)
-        return 0
-      }
-      setPos(p => Math.min(p + 1, TRACK_LEN - 1))
-      setLog(l => [...l, `铺了一块沙子，精力值 ${e} → ${next}`])
-      setActiveLine(4)
-      return next
-    })
+  // 纯函数：根据当前状态计算下一步
+  const computeNext = (curEnergy: number, curPos: number, curSubstep: number) => {
+    let nextEnergy = curEnergy
+    let nextPos = curPos
+    let nextSubstep = curSubstep
+    let activeLine = -1
+    let hint = ''
+    let logMsg = ''
+    let isDone = false
+
+    switch (curSubstep) {
+      case 0: // while(true)
+        activeLine = 1
+        hint = '🔁 while(true)：无条件进入循环体'
+        nextSubstep = 1
+        break
+      case 1: // if(e <= 0) 判断
+        activeLine = 2
+        if (curEnergy <= 0) {
+          hint = `💥 e = ${curEnergy} ≤ 0，触发 break！跳出循环`
+          logMsg = `e = ${curEnergy} ≤ 0，break！停止铺路。`
+          isDone = true
+        } else {
+          hint = `✅ e = ${curEnergy} > 0，不触发 break，继续执行`
+          nextSubstep = 2
+        }
+        break
+      case 2: // placeAhead("sand")
+        activeLine = 3
+        hint = `⛏️ 在前方铺一块沙子`
+        nextSubstep = 3
+        break
+      case 3: // moveForward()
+        activeLine = 4
+        nextPos = Math.min(curPos + 1, TRACK_LEN - 1)
+        hint = `🚶 向前迈一步，位置 ${curPos} → ${nextPos}`
+        nextSubstep = 4
+        break
+      case 4: // e -= 3
+        activeLine = 5
+        nextEnergy = curEnergy - COST
+        hint = `⚡ e = ${curEnergy} - ${COST} = ${nextEnergy}，精力减少`
+        logMsg = `铺了第 ${nextPos} 格沙子，精力 ${curEnergy} → ${nextEnergy}`
+        nextSubstep = 0
+        break
+    }
+    return { nextEnergy, nextPos, nextSubstep, activeLine, hint, logMsg, isDone }
   }
 
+  // 实际推进逻辑（读取最新 state，避免闭包陷阱）
+  useEffect(() => {
+    if (tick === 0) return
+    if (done) return
+    const { nextEnergy, nextPos, nextSubstep, activeLine, hint, logMsg, isDone } = computeNext(energy, pos, substep)
+    setSnapshot({ e: nextEnergy, pos: nextPos, activeLine, hint })
+    if (logMsg) setLog(l => [...l, logMsg])
+    if (isDone) {
+      setDone(true)
+      setAutoPlay(false)
+    } else {
+      setEnergy(nextEnergy)
+      setPos(nextPos)
+      setSubstep(nextSubstep)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tick])
+
+  const handleStep = () => {
+    if (done) return
+    setTick(t => t + 1)
+  }
+
+  // autoPlay：每隔 600ms 递增 tick，由上面的 useEffect 响应
   useEffect(() => {
     if (!autoPlay || done) return
-    const t = setInterval(() => step(), 800)
+    const t = setInterval(() => setTick(t => t + 1), 600)
     return () => clearInterval(t)
-  })
+  }, [autoPlay, done])
 
   const reset = () => {
     setEnergy(MAX_ENERGY)
@@ -2262,10 +2332,14 @@ const CmdBreakPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => vo
     setLog([])
     setDone(false)
     setAutoPlay(false)
-    setActiveLine(-1)
+    setSubstep(0)
+    setTick(0)
+    setSnapshot({ e: MAX_ENERGY, pos: 0, activeLine: -1, hint: '▶ 点击"单步执行"开始' })
   }
 
-  const energyPct = Math.max(0, energy / MAX_ENERGY)
+  const displayEnergy = done ? 0 : snapshot.e
+  const displayPos = done ? pos : snapshot.pos
+  const energyPct = Math.max(0, displayEnergy / MAX_ENERGY)
   const barColor = energyPct > 0.5 ? '#22c55e' : energyPct > 0.25 ? '#f59e0b' : '#ef4444'
 
   return (
@@ -2291,13 +2365,13 @@ const CmdBreakPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => vo
             '  e -= 3;',
             '}',
           ]}
-          activeLine={activeLine}
+          activeLine={snapshot.activeLine}
           runtimeBadges={[
-            { label: '精力 e', value: `${energy}` },
-            { label: '已铺格', value: `${pos} 格` },
+            { label: '精力 e', value: `${displayEnergy}` },
+            { label: '已铺格', value: `${displayPos} 格` },
           ]}
-          runtimeTitle="实时状态"
-          runtimeHint={done ? '💥 break 触发！停止劳动' : autoPlay ? '⏱️ 执行中…' : ''}
+          runtimeTitle="📊 当前变量"
+          runtimeHint={done ? '💥 break 触发！停止劳动' : snapshot.hint}
         />
       </FadeIn>
 
@@ -2311,14 +2385,14 @@ const CmdBreakPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => vo
               style={{ width: `${energyPct * 100}%`, background: barColor, transition: 'width 0.4s' }}
             />
           </div>
-          <span className="energy-val">{energy}</span>
+          <span className="energy-val">{displayEnergy}</span>
         </div>
 
         {/* 路径可视化 */}
         <div className="lava-track">
           {Array.from({ length: TRACK_LEN }, (_, i) => (
-            <div key={i} className={`lava-cell ${i < pos ? 'sand' : ''} ${i === pos ? 'alex' : ''}`}>
-              {i === pos ? '🧑' : i < pos ? '🟫' : '🔥'}
+            <div key={i} className={`lava-cell ${i < displayPos ? 'sand' : ''} ${i === displayPos ? 'alex' : ''}`}>
+              {i === displayPos ? '🧑' : i < displayPos ? '🟫' : '🔥'}
             </div>
           ))}
         </div>
@@ -2339,7 +2413,7 @@ const CmdBreakPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => vo
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: 12 }}>
           {!done ? (
             <>
-              <button className="next-btn" onClick={step} disabled={autoPlay}>单步执行 →</button>
+              <button className="next-btn" onClick={handleStep} disabled={autoPlay}>单步执行 →</button>
               <button className="next-btn" style={{ background: '#6366f1' }} onClick={() => setAutoPlay(!autoPlay)}>
                 {autoPlay ? '⏸ 暂停' : '▶ 自动运行'}
               </button>
@@ -2361,70 +2435,142 @@ const CmdBreakPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => vo
 }
 
 // 页面3：continue 动画页 - 跳过坏包子
+// 每次循环拆成子步：while条件 → i++ → if判断 → [continue跳过 / 吃包子]
 const CmdContinuePage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => {
-  // 5个包子：位置2是坏的（黄色）
   const BUNS = ['好', '好', '坏', '好', '好']
   const BUN_ICONS = ['🥟', '🥟', '🟡', '🥟', '🥟']
+  // 代码行（0-based）:
+  //   0: int i = 0;
+  //   1: while(i < 5) {
+  //   2:   i++;
+  //   3:   if(是坏包子) { continue; }
+  //   4:   // 跳到下一次循环了
+  //   5:   吃包子; cout << "包子好吃";
+  //   6: }
 
-  const [step, setStep] = useState(-1) // -1 = 未开始
+  const [iVal, setIVal] = useState(0)
+  const [eaten, setEaten] = useState(0)
   const [output, setOutput] = useState<string[]>([])
-  const [activeLine, setActiveLine] = useState(-1)
   const [finished, setFinished] = useState(false)
   const [autoPlay, setAutoPlay] = useState(false)
+  // substep: 0=while条件, 1=i++, 2=if判断, 3=吃包子
+  const [substep, setSubstep] = useState(0)
+  const [snapshot, setSnapshot] = useState({
+    activeLine: -1,
+    hint: '▶ 点击"单步执行"开始',
+    i: 0,
+    eaten: 0,
+    currentBunIdx: -1,
+  })
+  const [tick, setTick] = useState(0)
 
-  const doStep = (s: number) => {
-    if (s >= BUNS.length) {
-      setFinished(true)
-      setAutoPlay(false)
-      setActiveLine(-1)
-      return s
+  // 纯函数：根据当前状态计算下一步
+  const computeNextContinue = (curI: number, curEaten: number, curSubstep: number, curBunIdx: number) => {
+    let nextI = curI
+    let nextEaten = curEaten
+    let nextSubstep = curSubstep
+    let activeLine = -1
+    let hint = ''
+    let logMsg = ''
+    let isDone = false
+    let bunIdx = curBunIdx
+
+    switch (curSubstep) {
+      case 0: // while(i < 5) 条件检查
+        activeLine = 1
+        if (curI >= BUNS.length) {
+          hint = `✅ i = ${curI} ≥ 5，while 条件不成立，循环结束！`
+          isDone = true
+        } else {
+          hint = `🔁 i = ${curI} < 5，while 条件成立，进入循环体`
+          nextSubstep = 1
+        }
+        break
+      case 1: { // i++
+        activeLine = 2
+        nextI = curI + 1
+        bunIdx = nextI - 1
+        hint = `➕ i = ${curI} + 1 = ${nextI}，现在检查第 ${nextI} 个包子`
+        nextSubstep = 2
+        break
+      }
+      case 2: { // if(是坏包子) 判断
+        activeLine = 3
+        const bunIndex = curI - 1
+        const isBad = BUNS[bunIndex] === '坏'
+        bunIdx = bunIndex
+        if (isBad) {
+          hint = `⚠️ 第 ${curI} 个是坏包子！触发 continue → 跳回 while 条件`
+          logMsg = `第 ${curI} 个：坏包子 🟡，continue → 跳过！`
+          nextSubstep = 0 // continue 跳回 while 条件
+        } else {
+          hint = `✅ 第 ${curI} 个是好包子，不触发 continue，继续执行`
+          nextSubstep = 3
+        }
+        break
+      }
+      case 3: { // 吃包子
+        activeLine = 5
+        nextEaten = curEaten + 1
+        const bunIndex2 = curI - 1
+        bunIdx = bunIndex2
+        hint = `🥟 吃掉第 ${curI} 个好包子！已吃 ${nextEaten} 个`
+        logMsg = `第 ${curI} 个：好包子 🥟，吃掉！已吃 ${nextEaten} 个`
+        nextSubstep = 0
+        break
+      }
     }
-    const isBad = BUNS[s] === '坏'
-    if (isBad) {
-      setOutput(o => [...o, `第${s + 1}个：是坏包子 🟡，continue → 跳过！`])
-      setActiveLine(3)
-    } else {
-      setOutput(o => [...o, `第${s + 1}个：是好包子 🥟，吃掉！"包子好吃"`])
-      setActiveLine(5)
-    }
-    return s + 1
+    return { nextI, nextEaten, nextSubstep, activeLine, hint, logMsg, isDone, bunIdx }
   }
 
+  // tick 触发时推进一步（读取最新 state，避免闭包陷阱）
+  useEffect(() => {
+    if (tick === 0) return
+    if (finished) return
+    const { nextI, nextEaten, nextSubstep, activeLine, hint, logMsg, isDone, bunIdx } =
+      computeNextContinue(iVal, eaten, substep, snapshot.currentBunIdx)
+    setSnapshot({ activeLine, hint, i: nextI, eaten: nextEaten, currentBunIdx: bunIdx })
+    if (logMsg) setOutput(o => [...o, logMsg])
+    if (isDone) {
+      setFinished(true)
+      setAutoPlay(false)
+    } else {
+      setIVal(nextI)
+      setEaten(nextEaten)
+      setSubstep(nextSubstep)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tick])
+
   const handleStep = () => {
-    const next = doStep(step + 1)
-    setStep(next - 1)
+    if (finished) return
+    setTick(t => t + 1)
   }
 
   useEffect(() => {
     if (!autoPlay || finished) return
-    const t = setInterval(() => {
-      setStep(s => {
-        const nextIdx = s + 1
-        if (nextIdx >= BUNS.length) {
-          setFinished(true)
-          setAutoPlay(false)
-          return s
-        }
-        const isBad = BUNS[nextIdx] === '坏'
-        if (isBad) {
-          setOutput(o => [...o, `第${nextIdx + 1}个：是坏包子 🟡，continue → 跳过！`])
-          setActiveLine(3)
-        } else {
-          setOutput(o => [...o, `第${nextIdx + 1}个：是好包子 🥟，吃掉！"包子好吃"`])
-          setActiveLine(5)
-        }
-        return nextIdx
-      })
-    }, 900)
+    const t = setInterval(() => setTick(t => t + 1), 700)
     return () => clearInterval(t)
-  })
+  }, [autoPlay, finished])
 
   const reset = () => {
-    setStep(-1)
+    setIVal(0)
+    setEaten(0)
     setOutput([])
-    setActiveLine(-1)
     setFinished(false)
     setAutoPlay(false)
+    setSubstep(0)
+    setTick(0)
+    setSnapshot({ activeLine: -1, hint: '▶ 点击"单步执行"开始', i: 0, eaten: 0, currentBunIdx: -1 })
+  }
+
+  // 包子格状态：currentBunIdx 高亮当前，之前的格子根据好坏标记已处理
+  const getBunClass = (idx: number) => {
+    if (idx === snapshot.currentBunIdx) return 'current-bun'
+    if (idx < snapshot.currentBunIdx) {
+      return BUNS[idx] === '坏' ? 'skipped-bun' : 'eaten-bun'
+    }
+    return ''
   }
 
   return (
@@ -2450,12 +2596,13 @@ const CmdContinuePage = ({ onNext, onBack }: { onNext: () => void, onBack: () =>
             '  吃包子; cout << "包子好吃";',
             '}',
           ]}
-          activeLine={activeLine}
-          runtimeBadges={step >= 0 ? [
-            { label: 'i', value: `${step + 1}` },
-            { label: '已吃', value: `${output.filter(l => l.includes('吃掉')).length} 个` },
-          ] : []}
-          runtimeTitle="实时状态"
+          activeLine={snapshot.activeLine}
+          runtimeBadges={[
+            { label: 'i', value: `${snapshot.i}` },
+            { label: '已吃', value: `${snapshot.eaten} 个` },
+          ]}
+          runtimeTitle="📊 当前变量"
+          runtimeHint={snapshot.hint}
         />
       </FadeIn>
 
@@ -2463,15 +2610,12 @@ const CmdContinuePage = ({ onNext, onBack }: { onNext: () => void, onBack: () =>
         {/* 包子展示 */}
         <div className="bun-track">
           {BUNS.map((b, i) => (
-            <div
-              key={i}
-              className={`bun-cell ${i === step ? 'current-bun' : i < step ? (b === '坏' ? 'skipped-bun' : 'eaten-bun') : ''}`}
-            >
+            <div key={i} className={`bun-cell ${getBunClass(i)}`}>
               <div className="bun-icon">{BUN_ICONS[i]}</div>
               <div className="bun-label">{b === '坏' ? '坏' : '好'}</div>
-              {i < step && b !== '坏' && <div className="bun-check">✅</div>}
-              {i < step && b === '坏' && <div className="bun-check">⏭️</div>}
-              {i === step && <div className="bun-check">👆</div>}
+              {i < snapshot.currentBunIdx && b !== '坏' && <div className="bun-check">✅</div>}
+              {i < snapshot.currentBunIdx && b === '坏' && <div className="bun-check">⏭️</div>}
+              {i === snapshot.currentBunIdx && <div className="bun-check">👆</div>}
             </div>
           ))}
         </div>
