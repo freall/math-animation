@@ -7,6 +7,7 @@ type PageType =
   | 'intro' | 'venn' | 'two-set' | 'three-set' | 'practice'  // 容斥原理
   | 'sp-intro' | 'sp-concept' | 'sp-basic' | 'sp-forbidden' | 'sp-mustpass' | 'sp-special' | 'sp-practice'  // 标数法
   | 'sport-intro' | 'sport-elimination' | 'sport-round' | 'sport-graph' | 'sport-score' | 'sport-practice'  // 体育比赛中的学问
+  | 'chicken-intro' | 'chicken-basic' | 'chicken-unknown' | 'chicken-reverse' | 'chicken-practice'  // 鸡兔同笼
   | 'loop-intro' | 'loop-syntax' | 'loop-process' | 'loop-example' | 'loop-practice'
   | 'sort-intro' | 'sort-algos' | 'sort-visual' | 'sort-example' | 'sort-practice'
   | 'cmd-intro' | 'cmd-break' | 'cmd-continue' | 'cmd-compare' | 'cmd-practice'  // 循环指挥官
@@ -136,6 +137,12 @@ const HomePage = ({ onSelect }: { onSelect: (page: PageType) => void }) => (
           <h3>体育比赛中的学问</h3>
           <p>用动画看懂赛制、场次和积分里的数学秘密</p>
           <span className="topic-tag">比赛数学</span>
+        </div>
+        <div className="topic-card" onClick={() => onSelect('chicken-intro')}>
+          <div className="topic-icon">🐔</div>
+          <h3>鸡兔同笼</h3>
+          <p>用动画学会假设、替换和倒扣型题目的秘密</p>
+          <span className="topic-tag">应用题模型</span>
         </div>
         <div className="topic-card" onClick={() => onSelect('loop-intro')}>
           <div className="topic-icon">🔁</div>
@@ -2872,6 +2879,631 @@ const SportPracticePage = ({ onBack, onHome }: { onBack: () => void, onHome: () 
   )
 }
 
+// ========== 鸡兔同笼模块 ==========
+type CoopAssumption = 'all-chicken' | 'all-rabbit'
+
+const CoopCreatureWall = ({
+  firstCount,
+  secondCount,
+  firstIcon,
+  secondIcon,
+  firstLabel,
+  secondLabel,
+}: {
+  firstCount: number
+  secondCount: number
+  firstIcon: string
+  secondIcon: string
+  firstLabel: string
+  secondLabel: string
+}) => {
+  const total = firstCount + secondCount
+
+  return (
+    <div className="coop-wall-panel">
+      <div className="coop-wall">
+        {Array.from({ length: total }, (_, index) => {
+          const isSecond = index >= firstCount
+          return (
+            <div key={`${firstLabel}-${secondLabel}-${index}`} className={`coop-creature-card ${isSecond ? 'second' : 'first'}`}>
+              <span className="coop-creature-emoji">{isSecond ? secondIcon : firstIcon}</span>
+            </div>
+          )
+        })}
+      </div>
+      <div className="coop-legend-row">
+        <span className="coop-legend-pill first">{firstIcon} {firstLabel} × {firstCount}</span>
+        <span className="coop-legend-pill second">{secondIcon} {secondLabel} × {secondCount}</span>
+      </div>
+    </div>
+  )
+}
+
+const CoopVasePreview = ({ brokenCount }: { brokenCount: number }) => (
+  <div className="coop-vase-preview">
+    {Array.from({ length: 8 }, (_, index) => {
+      const isBroken = index < brokenCount
+      return (
+        <div key={`vase-${index}`} className={`coop-vase-card ${isBroken ? 'broken' : 'good'}`}>
+          <span>{isBroken ? '💥' : '🏺'}</span>
+        </div>
+      )
+    })}
+  </div>
+)
+
+const CoopIntroPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => (
+  <div className="page">
+    <button className="back-btn" onClick={onBack}>← 返回目录</button>
+    <FadeIn><h2 className="page-title"><span className="emoji">🐔</span>鸡兔同笼，先找“相同”和“不同”</h2></FadeIn>
+
+    <FadeIn delay={250}>
+      <div className="story-box">
+        <div className="story-icon">🐰</div>
+        <p>一个笼子里有鸡和兔，只知道总共有 <strong>40 个头</strong>、<strong>100 条腿</strong>。鸡和兔到底各有几只呢？</p>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={500}>
+      <CoopCreatureWall
+        firstCount={4}
+        secondCount={2}
+        firstIcon="🐔"
+        secondIcon="🐰"
+        firstLabel="鸡"
+        secondLabel="兔"
+      />
+    </FadeIn>
+
+    <FadeIn delay={800}>
+      <div className="coop-clue-grid">
+        <div className="coop-clue-card same">
+          <span className="coop-clue-icon">🙂</span>
+          <h3>共同点</h3>
+          <p>每只都有 1 个头，所以总头数能告诉我们“总只数”。</p>
+        </div>
+        <div className="coop-clue-card different">
+          <span className="coop-clue-icon">👣</span>
+          <h3>不同点</h3>
+          <p>鸡有 2 条腿，兔有 4 条腿，腿数差异就是破案线索。</p>
+        </div>
+        <div className="coop-clue-card method">
+          <span className="coop-clue-icon">🪄</span>
+          <h3>解题魔法</h3>
+          <p>先大胆假设，再一只只换，看看总腿数怎么变。</p>
+        </div>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={1100}>
+      <div className="summary-box coop-summary-box">
+        <h3>🧠 鸡兔同笼的本质</h3>
+        <ul>
+          <li>有两种东西混在一起</li>
+          <li>它们有一个相同特征</li>
+          <li>还藏着一个不同特征</li>
+          <li>用“假设 + 替换”就能慢慢找到答案</li>
+        </ul>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={1400}>
+      <div className="tip-box">
+        <span className="tip-icon">💡</span>
+        <p>这种方法不只会算鸡兔，还能算买书、搬花瓶、积分奖惩等很多生活题。</p>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={1650}><button className="next-btn" onClick={onNext}>开始玩“换一换” →</button></FadeIn>
+  </div>
+)
+
+const CoopBasicPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => {
+  const totalAnimals = 40
+  const targetLegs = 100
+  const [mode, setMode] = useState<CoopAssumption>('all-chicken')
+  const [swapCount, setSwapCount] = useState(0)
+  const [autoPlay, setAutoPlay] = useState(false)
+
+  const assumedLegs = mode === 'all-chicken' ? totalAnimals * 2 : totalAnimals * 4
+  const solutionCount = Math.abs(targetLegs - assumedLegs) / 2
+  const chickenCount = mode === 'all-chicken' ? totalAnimals - swapCount : swapCount
+  const rabbitCount = mode === 'all-chicken' ? swapCount : totalAnimals - swapCount
+  const currentLegs = chickenCount * 2 + rabbitCount * 4
+  const gap = Math.abs(targetLegs - currentLegs)
+  const solved = currentLegs === targetLegs
+
+  useEffect(() => {
+    setSwapCount(0)
+    setAutoPlay(false)
+  }, [mode])
+
+  useEffect(() => {
+    if (!autoPlay) return
+    if (solved || swapCount >= solutionCount) {
+      setAutoPlay(false)
+      return
+    }
+    const timer = setTimeout(() => setSwapCount((value) => Math.min(value + 1, solutionCount)), 280)
+    return () => clearTimeout(timer)
+  }, [autoPlay, solved, solutionCount, swapCount])
+
+  const handleStep = () => setSwapCount((value) => Math.min(value + 1, solutionCount))
+
+  return (
+    <div className="page">
+      <button className="back-btn" onClick={onBack}>← 返回目录</button>
+      <FadeIn><h2 className="page-title"><span className="emoji">🎯</span>基础型：假设成一样，再慢慢换</h2></FadeIn>
+
+      <FadeIn delay={250}>
+        <div className="example-box">
+          <h3>📋 题目</h3>
+          <p>鸡兔共有 40 只，关在同一个笼子里。</p>
+          <p>如果一共数出 100 条腿，鸡和兔各有几只？</p>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={500}>
+        <div className="coop-tabs">
+          <button className={`coop-tab ${mode === 'all-chicken' ? 'active' : ''}`} onClick={() => setMode('all-chicken')}>先假设全是鸡</button>
+          <button className={`coop-tab ${mode === 'all-rabbit' ? 'active' : ''}`} onClick={() => setMode('all-rabbit')}>也可以假设全是兔</button>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={750}>
+        <div className="coop-counter-row">
+          <div className="coop-counter-card">
+            <span className="coop-counter-label">现在有鸡</span>
+            <strong className="coop-counter-value">{chickenCount} 只</strong>
+          </div>
+          <div className="coop-counter-card highlight">
+            <span className="coop-counter-label">现在有兔</span>
+            <strong className="coop-counter-value">{rabbitCount} 只</strong>
+          </div>
+          <div className="coop-counter-card">
+            <span className="coop-counter-label">总腿数</span>
+            <strong className="coop-counter-value">{currentLegs} 条</strong>
+          </div>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={950}>
+        <CoopCreatureWall
+          firstCount={chickenCount}
+          secondCount={rabbitCount}
+          firstIcon="🐔"
+          secondIcon="🐰"
+          firstLabel="鸡"
+          secondLabel="兔"
+        />
+      </FadeIn>
+
+      <FadeIn delay={1150}>
+        <div className="coop-gap-banner">
+          {solved
+            ? '🎉 正好 100 条腿，答案找到啦！'
+            : mode === 'all-chicken'
+              ? `离 100 条腿还差 ${gap} 条，再把 ${gap / 2} 只鸡换成兔就行。`
+              : `比 100 条腿多了 ${gap} 条，再把 ${gap / 2} 只兔换成鸡就行。`}
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={1350}>
+        <div className="coop-step-grid">
+          <div className="coop-step-card">
+            <span className="coop-step-index">1</span>
+            <p>{mode === 'all-chicken' ? `假设 40 只全是鸡：40 × 2 = ${assumedLegs} 条腿。` : `假设 40 只全是兔：40 × 4 = ${assumedLegs} 条腿。`}</p>
+          </div>
+          <div className="coop-step-card">
+            <span className="coop-step-index">2</span>
+            <p>{mode === 'all-chicken' ? `和实际 100 条相比，还差 ${targetLegs - assumedLegs} 条。` : `和实际 100 条相比，多出 ${assumedLegs - targetLegs} 条。`}</p>
+          </div>
+          <div className="coop-step-card">
+            <span className="coop-step-index">3</span>
+            <p>{mode === 'all-chicken' ? '1 只鸡换成 1 只兔，腿数会多 2 条。' : '1 只兔换成 1 只鸡，腿数会少 2 条。'}</p>
+          </div>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={1550}>
+        <div className="coop-equation-strip">
+          <span>{Math.abs(targetLegs - assumedLegs)}</span>
+          <span>÷</span>
+          <span>2</span>
+          <span>=</span>
+          <strong>{solutionCount}</strong>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={1750}>
+        <div className="coop-action-row">
+          <button className="coop-control-btn" onClick={handleStep} disabled={solved}>换一只</button>
+          <button className="coop-control-btn" onClick={() => setAutoPlay((value) => !value)} disabled={solved}>{autoPlay ? '暂停自动换' : '自动换一换'}</button>
+          <button className="coop-control-btn ghost" onClick={() => { setSwapCount(0); setAutoPlay(false) }}>重新开始</button>
+        </div>
+      </FadeIn>
+
+      {solved && (
+        <FadeIn delay={1950}>
+          <div className="answer-box">
+            <span className="answer-icon">✅</span>
+            <p>答：鸡有 <strong>{chickenCount} 只</strong>，兔有 <strong>{rabbitCount} 只</strong>。</p>
+          </div>
+        </FadeIn>
+      )}
+
+      <FadeIn delay={2150}><button className="next-btn" onClick={onNext}>再挑战一种变式 →</button></FadeIn>
+    </div>
+  )
+}
+
+const CoopUnknownPage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => {
+  const totalHeads = 40
+  const totalCreatures = totalHeads / 2
+  const targetLegs = 68
+  const [deerCount, setDeerCount] = useState(0)
+  const [autoPlay, setAutoPlay] = useState(false)
+
+  const birdCount = totalCreatures - deerCount
+  const currentLegs = birdCount * 2 + deerCount * 4
+  const solved = currentLegs === targetLegs
+  const solutionDeer = (targetLegs - totalCreatures * 2) / 2
+
+  useEffect(() => {
+    if (!autoPlay) return
+    if (solved || deerCount >= solutionDeer) {
+      setAutoPlay(false)
+      return
+    }
+    const timer = setTimeout(() => setDeerCount((value) => Math.min(value + 1, solutionDeer)), 320)
+    return () => clearTimeout(timer)
+  }, [autoPlay, deerCount, solved, solutionDeer])
+
+  return (
+    <div className="page">
+      <button className="back-btn" onClick={onBack}>← 返回目录</button>
+      <FadeIn><h2 className="page-title"><span className="emoji">🦌</span>总只数未知型：先用共同点找总数</h2></FadeIn>
+
+      <FadeIn delay={250}>
+        <div className="example-box">
+          <h3>📋 题目</h3>
+          <p>笼子里有双头鸟和双头鹿，一共有 40 个头、68 条腿。</p>
+          <p className="question">双头鸟和双头鹿各有多少只？</p>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={500}>
+        <div className="coop-counter-row">
+          <div className="coop-counter-card">
+            <span className="coop-counter-label">总头数</span>
+            <strong className="coop-counter-value">40 个</strong>
+          </div>
+          <div className="coop-counter-card highlight">
+            <span className="coop-counter-label">总只数</span>
+            <strong className="coop-counter-value">40 ÷ 2 = 20 只</strong>
+          </div>
+          <div className="coop-counter-card">
+            <span className="coop-counter-label">当前腿数</span>
+            <strong className="coop-counter-value">{currentLegs} 条</strong>
+          </div>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={750}>
+        <CoopCreatureWall
+          firstCount={birdCount}
+          secondCount={deerCount}
+          firstIcon="🐦"
+          secondIcon="🦌"
+          firstLabel="双头鸟"
+          secondLabel="双头鹿"
+        />
+      </FadeIn>
+
+      <FadeIn delay={1000}>
+        <div className="coop-gap-banner">
+          {solved ? '🎉 68 条腿也对上啦！' : `先把 20 只都当成双头鸟，还差 ${targetLegs - currentLegs} 条腿。`}
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={1200}>
+        <div className="coop-step-grid">
+          <div className="coop-step-card">
+            <span className="coop-step-index">1</span>
+            <p>每一只都有 2 个头，所以总只数先算出来：40 ÷ 2 = 20 只。</p>
+          </div>
+          <div className="coop-step-card">
+            <span className="coop-step-index">2</span>
+            <p>假设 20 只全是双头鸟，一共有 20 × 2 = 40 条腿。</p>
+          </div>
+          <div className="coop-step-card">
+            <span className="coop-step-index">3</span>
+            <p>1 只双头鸟换成 1 只双头鹿，腿数会多 2 条，所以鹿有 28 ÷ 2 = 14 只。</p>
+          </div>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={1450}>
+        <div className="coop-equation-strip">
+          <span>68 - 40</span>
+          <span>=</span>
+          <span>28</span>
+          <span>，28 ÷ 2 =</span>
+          <strong>{solutionDeer}</strong>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={1650}>
+        <div className="coop-action-row">
+          <button className="coop-control-btn" onClick={() => setDeerCount((value) => Math.min(value + 1, solutionDeer))} disabled={solved}>换成一只鹿</button>
+          <button className="coop-control-btn" onClick={() => setAutoPlay((value) => !value)} disabled={solved}>{autoPlay ? '暂停演示' : '自动演示'}</button>
+          <button className="coop-control-btn ghost" onClick={() => { setDeerCount(0); setAutoPlay(false) }}>清空重来</button>
+        </div>
+      </FadeIn>
+
+      {solved && (
+        <FadeIn delay={1850}>
+          <div className="answer-box">
+            <span className="answer-icon">🌟</span>
+            <p>答：双头鸟有 <strong>{birdCount} 只</strong>，双头鹿有 <strong>{deerCount} 只</strong>。</p>
+          </div>
+        </FadeIn>
+      )}
+
+      <FadeIn delay={2050}><button className="next-btn" onClick={onNext}>再看倒扣型题目 →</button></FadeIn>
+    </div>
+  )
+}
+
+const CoopReversePage = ({ onNext, onBack }: { onNext: () => void, onBack: () => void }) => {
+  const totalVases = 250
+  const intactFee = 20
+  const brokenFine = 100
+  const targetMoney = 4400
+  const expectedMoney = totalVases * intactFee
+  const changePerBroken = intactFee + brokenFine
+  const [brokenCount, setBrokenCount] = useState(0)
+  const [autoPlay, setAutoPlay] = useState(false)
+
+  const currentMoney = expectedMoney - brokenCount * changePerBroken
+  const solved = currentMoney === targetMoney
+  const solutionBroken = (expectedMoney - targetMoney) / changePerBroken
+
+  useEffect(() => {
+    if (!autoPlay) return
+    if (solved || brokenCount >= solutionBroken) {
+      setAutoPlay(false)
+      return
+    }
+    const timer = setTimeout(() => setBrokenCount((value) => Math.min(value + 1, solutionBroken)), 420)
+    return () => clearTimeout(timer)
+  }, [autoPlay, brokenCount, solved, solutionBroken])
+
+  return (
+    <div className="page">
+      <button className="back-btn" onClick={onBack}>← 返回目录</button>
+      <FadeIn><h2 className="page-title"><span className="emoji">🏺</span>倒扣型：坏一个，不只是少拿，还要倒赔</h2></FadeIn>
+
+      <FadeIn delay={250}>
+        <div className="example-box">
+          <h3>📋 题目</h3>
+          <p>工人运 250 个花瓶，完整送到 1 个给 20 元，打坏 1 个要倒赔 100 元。</p>
+          <p className="question">运完后共得 4400 元，一共打坏了几个花瓶？</p>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={500}>
+        <div className="coop-counter-row">
+          <div className="coop-counter-card">
+            <span className="coop-counter-label">如果全完好</span>
+            <strong className="coop-counter-value">{expectedMoney} 元</strong>
+          </div>
+          <div className="coop-counter-card highlight">
+            <span className="coop-counter-label">现在钱数</span>
+            <strong className="coop-counter-value">{currentMoney} 元</strong>
+          </div>
+          <div className="coop-counter-card">
+            <span className="coop-counter-label">已坏花瓶</span>
+            <strong className="coop-counter-value">{brokenCount} 个</strong>
+          </div>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={780}>
+        <div className="coop-money-flow">
+          <div className="coop-money-chip good">完好 1 个：+20 元</div>
+          <div className="coop-money-chip broken">打坏 1 个：-100 元</div>
+          <div className="coop-money-chip total">一来一去：少 120 元</div>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={1020}>
+        <CoopVasePreview brokenCount={brokenCount} />
+      </FadeIn>
+
+      <FadeIn delay={1220}>
+        <div className="coop-gap-banner">
+          {solved ? '🎉 现在正好只剩 4400 元！' : `和 4400 元还差 ${currentMoney - targetMoney} 元，每坏 1 个就少 120 元。`}
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={1450}>
+        <div className="coop-step-grid">
+          <div className="coop-step-card">
+            <span className="coop-step-index">1</span>
+            <p>先假设 250 个花瓶全都完好，应拿 250 × 20 = 5000 元。</p>
+          </div>
+          <div className="coop-step-card">
+            <span className="coop-step-index">2</span>
+            <p>实际只拿到 4400 元，所以一共少了 5000 - 4400 = 600 元。</p>
+          </div>
+          <div className="coop-step-card">
+            <span className="coop-step-index">3</span>
+            <p>1 个好花瓶变成坏花瓶，要少拿 20 元，还要再赔 100 元，共少 120 元。</p>
+          </div>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={1680}>
+        <div className="coop-equation-strip">
+          <span>600</span>
+          <span>÷</span>
+          <span>120</span>
+          <span>=</span>
+          <strong>{solutionBroken}</strong>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={1900}>
+        <div className="coop-action-row">
+          <button className="coop-control-btn" onClick={() => setBrokenCount((value) => Math.min(value + 1, solutionBroken))} disabled={solved}>打坏一个</button>
+          <button className="coop-control-btn" onClick={() => setAutoPlay((value) => !value)} disabled={solved}>{autoPlay ? '暂停演示' : '自动演示'}</button>
+          <button className="coop-control-btn ghost" onClick={() => { setBrokenCount(0); setAutoPlay(false) }}>重新开始</button>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={2120}>
+        <div className="tip-box">
+          <span className="tip-icon">📚</span>
+          <p>这就是图片里说的“倒扣型”：原来是加分，变坏后反而扣分，所以单差要用 <strong>20 + 100</strong> 来算。</p>
+        </div>
+      </FadeIn>
+
+      {solved && (
+        <FadeIn delay={2350}>
+          <div className="answer-box">
+            <span className="answer-icon">🏁</span>
+            <p>答：一共打坏了 <strong>{brokenCount} 个花瓶</strong>。</p>
+          </div>
+        </FadeIn>
+      )}
+
+      <FadeIn delay={2550}><button className="next-btn" onClick={onNext}>来闯关练习吧 →</button></FadeIn>
+    </div>
+  )
+}
+
+const CoopPracticePage = ({ onBack, onHome }: { onBack: () => void, onHome: () => void }) => {
+  const questions = [
+    {
+      title: '① 基础型',
+      question: '鸡兔共有 40 只，腿有 100 条，兔有多少只？',
+      options: ['8 只', '10 只', '12 只'],
+      answer: 1,
+      explanation: '先假设全是鸡，共 80 条腿，还差 20 条。每把 1 只鸡换成兔，就多 2 条腿，所以兔有 10 只。',
+    },
+    {
+      title: '② 先找共同点',
+      question: '双头鸟和双头鹿一共有 40 个头。先算出的总只数是多少？',
+      options: ['10 只', '20 只', '40 只'],
+      answer: 1,
+      explanation: '因为每一只都有 2 个头，所以总只数 = 40 ÷ 2 = 20 只。',
+    },
+    {
+      title: '③ 倒扣型',
+      question: '花瓶题里，1 个好花瓶变成 1 个坏花瓶，钱数一共会少多少？',
+      options: ['80 元', '100 元', '120 元'],
+      answer: 2,
+      explanation: '本来应该 +20 元，现在变成 -100 元，一来一去共少 120 元。',
+    },
+    {
+      title: '④ 生活应用',
+      question: '100 元买了 2 本 20 元漫画书和 1 本 50 元参考书，这道题和鸡兔同笼最像哪一步？',
+      options: ['先看相同点，再假设成一种', '先画路线图', '先把重复部分减掉'],
+      answer: 0,
+      explanation: '鸡兔同笼最核心的想法，就是抓住共同点，再用假设和替换去找答案。',
+    },
+  ]
+
+  const [current, setCurrent] = useState(0)
+  const [selected, setSelected] = useState<number | null>(null)
+  const [submitted, setSubmitted] = useState(false)
+  const [score, setScore] = useState(0)
+
+  const question = questions[current]
+  const isCorrect = selected === question.answer
+  const starCount = score === questions.length ? 3 : score >= questions.length - 1 ? 2 : 1
+
+  const handleSubmit = () => {
+    if (selected === null || submitted) return
+    setSubmitted(true)
+    if (selected === question.answer) {
+      setScore((value) => value + 1)
+    }
+  }
+
+  const handleNext = () => {
+    setCurrent((value) => value + 1)
+    setSelected(null)
+    setSubmitted(false)
+  }
+
+  return (
+    <div className="page">
+      <button className="back-btn" onClick={onBack}>← 返回目录</button>
+      <FadeIn><h2 className="page-title"><span className="emoji">🎮</span>鸡兔同笼闯关赛</h2></FadeIn>
+
+      <FadeIn delay={250}>
+        <div className="example-box">
+          <h3>📋 第 {current + 1} 题 / {questions.length}</h3>
+          <p>{question.title}</p>
+          <p className="question">{question.question}</p>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={550}>
+        <div className="quiz-options">
+          {question.options.map((option, index) => (
+            <button
+              key={option}
+              className={`quiz-option ${selected === index ? 'selected' : ''} ${submitted && index === question.answer ? 'correct' : ''} ${submitted && selected === index && !isCorrect ? 'wrong' : ''}`}
+              onClick={() => !submitted && setSelected(index)}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={850}>
+        {!submitted ? (
+          <button className="submit-btn" onClick={handleSubmit} disabled={selected === null}>提交答案</button>
+        ) : (
+          <div className={`result-box ${isCorrect ? 'correct' : 'wrong'}`}>
+            <span className="result-icon">{isCorrect ? '🎉' : '🤔'}</span>
+            <p>{isCorrect ? '答对啦！你已经越来越像鸡兔侦探了！' : '再想想“相同点”和“每换一只差多少”。'}</p>
+            <p className="explanation">{question.explanation}</p>
+            {current < questions.length - 1 ? (
+              <button className="next-btn" onClick={handleNext}>下一题 →</button>
+            ) : (
+              <button className="restart-btn" onClick={onHome}>✅ 完成学习</button>
+            )}
+          </div>
+        )}
+      </FadeIn>
+
+      {current === questions.length - 1 && submitted && (
+        <FadeIn delay={1150}>
+          <div className="summary-box coop-summary-box">
+            <h3>🏅 你的闯关成绩：{score} / {questions.length}</h3>
+            <div className="coop-star-row">
+              {Array.from({ length: 3 }, (_, index) => (
+                <span key={`star-${index}`} className={`coop-star ${index < starCount ? 'active' : ''}`}>⭐</span>
+              ))}
+            </div>
+            <ul>
+              <li>先抓住相同点，找出总只数</li>
+              <li>再看不同点，算出每换 1 只的变化</li>
+              <li>倒扣型题目要记得“少拿 + 倒赔”一起算</li>
+              <li>买书、搬花瓶、奖惩积分题都能用这个思路</li>
+            </ul>
+          </div>
+        </FadeIn>
+      )}
+    </div>
+  )
+}
+
 // ========== 循环指挥官模块（第11课）==========
 
 // 页面1：概念引入 - while(true) 无限循环
@@ -4280,6 +4912,7 @@ function App() {
   const iePages: PageType[] = ['intro', 'venn', 'two-set', 'three-set', 'practice']
   const spPages: PageType[] = ['sp-intro', 'sp-concept', 'sp-basic', 'sp-forbidden', 'sp-mustpass', 'sp-special', 'sp-practice']
   const sportPages: PageType[] = ['sport-intro', 'sport-elimination', 'sport-round', 'sport-graph', 'sport-score', 'sport-practice']
+  const chickenPages: PageType[] = ['chicken-intro', 'chicken-basic', 'chicken-unknown', 'chicken-reverse', 'chicken-practice']
   const loopPages: PageType[] = ['loop-intro', 'loop-syntax', 'loop-process', 'loop-example', 'loop-practice']
   const sortPages: PageType[] = ['sort-intro', 'sort-algos', 'sort-visual', 'sort-example', 'sort-practice']
   const cmdPages: PageType[] = ['cmd-intro', 'cmd-break', 'cmd-continue', 'cmd-compare', 'cmd-practice']
@@ -4287,6 +4920,7 @@ function App() {
   const isInclusion = iePages.includes(currentPage)
   const isShortestPath = spPages.includes(currentPage)
   const isSport = sportPages.includes(currentPage)
+  const isChicken = chickenPages.includes(currentPage)
   const isLoop = loopPages.includes(currentPage)
   const isSort = sortPages.includes(currentPage)
   const isCmd = cmdPages.includes(currentPage)
@@ -4296,15 +4930,17 @@ function App() {
       ? spPages
       : isSport
         ? sportPages
-        : isLoop
-          ? loopPages
-          : isSort
-            ? sortPages
-            : isCmd
-              ? cmdPages
-              : poetryPages.includes(currentPage)
-                ? poetryPages
-                : []
+        : isChicken
+          ? chickenPages
+          : isLoop
+            ? loopPages
+            : isSort
+              ? sortPages
+              : isCmd
+                ? cmdPages
+                : poetryPages.includes(currentPage)
+                  ? poetryPages
+                  : []
 
   return (
     <div className="app">
@@ -4333,6 +4969,13 @@ function App() {
       {currentPage === 'sport-graph' && <SportGraphPage onNext={() => goTo('sport-score')} onBack={goHome} />}
       {currentPage === 'sport-score' && <SportScorePage onNext={() => goTo('sport-practice')} onBack={goHome} />}
       {currentPage === 'sport-practice' && <SportPracticePage onBack={goHome} onHome={goHome} />}
+
+      {/* 鸡兔同笼 */}
+      {currentPage === 'chicken-intro' && <CoopIntroPage onNext={() => goTo('chicken-basic')} onBack={goHome} />}
+      {currentPage === 'chicken-basic' && <CoopBasicPage onNext={() => goTo('chicken-unknown')} onBack={goHome} />}
+      {currentPage === 'chicken-unknown' && <CoopUnknownPage onNext={() => goTo('chicken-reverse')} onBack={goHome} />}
+      {currentPage === 'chicken-reverse' && <CoopReversePage onNext={() => goTo('chicken-practice')} onBack={goHome} />}
+      {currentPage === 'chicken-practice' && <CoopPracticePage onBack={goHome} onHome={goHome} />}
 
       {currentPage === 'loop-intro' && <LoopIntroPage onNext={() => goTo('loop-syntax')} onBack={goHome} />}
       {currentPage === 'loop-syntax' && <LoopSyntaxPage onNext={() => goTo('loop-process')} onBack={goHome} />}

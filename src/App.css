@@ -3185,3 +3185,379 @@ body {
     justify-content: flex-start;
   }
 }
+
+/* ================================
+   鸡兔同笼模块
+   ================================ */
+.coop-clue-grid,
+.coop-counter-row,
+.coop-step-grid {
+  display: grid;
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.coop-clue-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.coop-counter-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.coop-clue-card,
+.coop-counter-card,
+.coop-step-card,
+.coop-wall-panel,
+.coop-vase-card,
+.coop-money-chip {
+  background: white;
+  border-radius: 22px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.coop-clue-card,
+.coop-counter-card,
+.coop-step-card {
+  padding: 20px;
+  border: 2px solid #e5e7eb;
+}
+
+.coop-clue-card.same {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #60a5fa;
+}
+
+.coop-clue-card.different {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border-color: #fb923c;
+}
+
+.coop-clue-card.method {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border-color: #a78bfa;
+}
+
+.coop-clue-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.coop-clue-card h3,
+.coop-summary-box h3 {
+  color: #1f2937;
+}
+
+.coop-clue-card p,
+.coop-step-card p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.75;
+}
+
+.coop-summary-box {
+  border-color: #f97316;
+}
+
+.coop-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 22px 0;
+}
+
+.coop-tab,
+.coop-control-btn {
+  border: none;
+  border-radius: 999px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.coop-tab {
+  padding: 12px 20px;
+  background: white;
+  color: #7c2d12;
+  border: 2px solid #fed7aa;
+}
+
+.coop-tab.active {
+  background: linear-gradient(135deg, #f97316 0%, #fb7185 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 12px 28px rgba(249, 115, 22, 0.24);
+}
+
+.coop-wall-panel {
+  padding: 20px;
+  background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+  border: 3px solid #fed7aa;
+}
+
+.coop-wall {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+  gap: 10px;
+}
+
+.coop-creature-card {
+  min-height: 54px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  animation: coop-bob 2.4s ease-in-out infinite;
+}
+
+.coop-creature-card.first {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #93c5fd;
+}
+
+.coop-creature-card.second {
+  background: linear-gradient(135deg, #fdf2f8 0%, #ffe4e6 100%);
+  border-color: #f9a8d4;
+}
+
+.coop-creature-emoji {
+  font-size: 1.6rem;
+}
+
+@keyframes coop-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.coop-legend-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.coop-legend-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: bold;
+}
+
+.coop-legend-pill.first {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.coop-legend-pill.second {
+  background: #ffe4e6;
+  color: #be185d;
+}
+
+.coop-counter-card {
+  text-align: center;
+}
+
+.coop-counter-card.highlight {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border-color: #fb923c;
+}
+
+.coop-counter-label {
+  display: block;
+  color: #64748b;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.coop-counter-value {
+  font-size: 1.55rem;
+  color: #9a3412;
+}
+
+.coop-gap-banner {
+  padding: 16px 20px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  text-align: center;
+  font-weight: bold;
+}
+
+.coop-step-grid {
+  grid-template-columns: 1fr;
+}
+
+.coop-step-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.coop-step-index {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffedd5;
+  color: #c2410c;
+  font-weight: bold;
+}
+
+.coop-equation-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 16px 22px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  color: #6d28d9;
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.coop-equation-strip strong {
+  font-size: 1.6rem;
+}
+
+.coop-action-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 24px 0;
+}
+
+.coop-control-btn {
+  background: linear-gradient(135deg, #f97316 0%, #fb7185 100%);
+  color: white;
+  padding: 12px 22px;
+  box-shadow: 0 12px 24px rgba(249, 115, 22, 0.24);
+}
+
+.coop-control-btn:hover:not(:disabled),
+.coop-tab:hover {
+  transform: translateY(-2px);
+}
+
+.coop-control-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.coop-control-btn.ghost {
+  background: white;
+  color: #ea580c;
+  border: 2px solid #fdba74;
+  box-shadow: none;
+}
+
+.coop-money-flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 24px 0;
+}
+
+.coop-money-chip {
+  padding: 18px;
+  text-align: center;
+  border: 2px solid transparent;
+  font-weight: bold;
+}
+
+.coop-money-chip.good {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  color: #047857;
+  border-color: #6ee7b7;
+}
+
+.coop-money-chip.broken {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+
+.coop-money-chip.total {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: #c2410c;
+  border-color: #fdba74;
+}
+
+.coop-vase-preview {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.coop-vase-card {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+}
+
+.coop-vase-card span {
+  font-size: 1.8rem;
+}
+
+.coop-vase-card.good {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #93c5fd;
+}
+
+.coop-vase-card.broken {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-color: #fca5a5;
+}
+
+.coop-star-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 14px 0 18px;
+}
+
+.coop-star {
+  font-size: 2rem;
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+
+.coop-star.active {
+  filter: grayscale(0);
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .coop-clue-grid,
+  .coop-counter-row,
+  .coop-money-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .coop-step-card {
+    align-items: flex-start;
+  }
+
+  .coop-vase-preview {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
