@@ -2811,3 +2811,377 @@ body {
   padding: 14px 30px;
   font-size: 1.1rem;
 }
+
+/* ================================
+   体育比赛中的学问模块
+   ================================ */
+.sport-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 24px 0;
+}
+
+.sport-mode-card,
+.sport-fact-card,
+.sport-counter-card,
+.sport-match-card,
+.sport-step-card,
+.sport-score-match {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.sport-mode-card {
+  padding: 24px;
+  border: 3px solid transparent;
+}
+
+.sport-mode-card.elimination {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border-color: #fb923c;
+}
+
+.sport-mode-card.league {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #60a5fa;
+}
+
+.sport-mode-icon {
+  font-size: 2.4rem;
+  margin-bottom: 10px;
+}
+
+.sport-mode-card h3,
+.sport-fact-card strong {
+  display: block;
+  color: #1f2937;
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+}
+
+.sport-mode-card p,
+.sport-mode-card span,
+.sport-fact-card p {
+  color: #475569;
+  line-height: 1.7;
+}
+
+.sport-fact-grid,
+.sport-counter-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.sport-fact-card,
+.sport-counter-card {
+  padding: 20px;
+  text-align: center;
+  border: 2px solid #e2e8f0;
+}
+
+.sport-fact-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+}
+
+.sport-counter-card.highlight {
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+  border-color: #8b5cf6;
+}
+
+.sport-counter-label {
+  display: block;
+  font-size: 0.95rem;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.sport-counter-value {
+  font-size: 1.6rem;
+  color: #4c1d95;
+}
+
+.sport-current-match {
+  padding: 16px 22px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 18px;
+  color: #92400e;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.sport-match-list,
+.sport-scoreboard,
+.sport-step-panel {
+  display: grid;
+  gap: 14px;
+  margin: 22px 0;
+}
+
+.sport-match-card,
+.sport-score-match,
+.sport-step-card {
+  padding: 18px 20px;
+  border: 2px solid #e2e8f0;
+}
+
+.sport-match-card.active,
+.sport-score-match.active,
+.sport-step-card.active {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.14);
+}
+
+.sport-match-card.done,
+.sport-score-match.done,
+.sport-step-card.done {
+  border-color: #34d399;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+}
+
+.sport-match-round {
+  color: #7c3aed;
+  font-size: 0.95rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.sport-match-teams {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 1.15rem;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.sport-vs {
+  color: #f97316;
+  font-size: 0.95rem;
+}
+
+.sport-match-note {
+  margin-top: 10px;
+  text-align: center;
+  color: #64748b;
+}
+
+.sport-match-teams .out {
+  text-decoration: line-through;
+  color: #94a3b8;
+}
+
+.sport-action-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 24px 0;
+}
+
+.sport-control-btn {
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  padding: 12px 22px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.22);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sport-control-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(99, 102, 241, 0.28);
+}
+
+.sport-control-btn.ghost {
+  background: white;
+  color: #6366f1;
+  border: 2px solid #c7d2fe;
+  box-shadow: none;
+}
+
+.sport-chooser,
+.sport-point-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 22px 0;
+}
+
+.sport-chip,
+.sport-point-tab {
+  border: 2px solid #c7d2fe;
+  border-radius: 999px;
+  padding: 10px 18px;
+  background: white;
+  color: #4f46e5;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sport-chip.active,
+.sport-point-tab.active {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 10px 22px rgba(99, 102, 241, 0.25);
+}
+
+.sport-diagram-panel {
+  margin: 24px 0;
+  padding: 16px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%);
+  border: 3px solid #ddd6fe;
+}
+
+.sport-league-svg {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.sport-link {
+  stroke-width: 6;
+  stroke-linecap: round;
+  opacity: 0.35;
+}
+
+.sport-link.played {
+  stroke: #8b5cf6;
+  opacity: 1;
+}
+
+.sport-link.active {
+  stroke: #f59e0b;
+  opacity: 1;
+  stroke-dasharray: 10 8;
+  animation: sport-dash 0.8s linear infinite;
+}
+
+@keyframes sport-dash {
+  to {
+    stroke-dashoffset: -18;
+  }
+}
+
+.sport-node {
+  fill: white;
+  stroke: #3b82f6;
+  stroke-width: 4;
+}
+
+.sport-node-text {
+  fill: #1d4ed8;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.sport-node-label {
+  fill: #7c3aed;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.sport-step-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sport-step-index {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ede9fe;
+  color: #6d28d9;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.sport-step-card p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.7;
+}
+
+.sport-score-match {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.sport-score-match p {
+  margin: 6px 0 0;
+  color: #64748b;
+}
+
+.sport-score-points {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.sport-score-points span {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ede9fe;
+  color: #5b21b6;
+  font-weight: bold;
+}
+
+.sport-score-points .sport-score-divider {
+  width: auto;
+  height: auto;
+  background: transparent;
+  color: #64748b;
+}
+
+.sport-score-points em {
+  font-style: normal;
+  color: #92400e;
+  background: #fef3c7;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .sport-mode-grid,
+  .sport-fact-grid,
+  .sport-counter-row {
+    grid-template-columns: 1fr;
+  }
+
+  .sport-score-match,
+  .sport-step-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sport-score-points {
+    justify-content: flex-start;
+  }
+}
