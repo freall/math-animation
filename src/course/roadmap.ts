@@ -281,8 +281,8 @@ export const engineeringMilestones: EngineeringMilestone[] = [
     id: 'eng-module-registry',
     title: '建立模块注册表',
     priority: 'high',
-    goal: '把首页导航、模块元信息、页面顺序、奖励规则统一注册，降低新增模块时的改动面。',
-    deliverables: ['模块类型定义', '统一 registry 文件', '首页从 registry 渲染'],
+    goal: '已统一首页导航、模块元信息和页面顺序，下一步继续把奖励与练习配置接入同一套注册协议。',
+    deliverables: ['模块类型定义', 'src/course/registry.ts', '首页从 registry 渲染', 'AppShell 读取模块顺序'],
   },
   {
     id: 'eng-shared-lesson-components',
@@ -316,7 +316,7 @@ export const engineeringMilestones: EngineeringMilestone[] = [
     id: 'eng-style-split',
     title: '拆分大体量样式与页面逻辑',
     priority: 'medium',
-    goal: '逐步告别超大的 App.tsx 和 App.css，减小后续模块整合风险。',
-    deliverables: ['src/modules 目录', 'shared 样式', '模块样式', 'AppShell'],
+    goal: '已完成 AppShell 与首页重构，下一步继续把共享样式和模块样式彻底拆分，减小后续模块整合风险。',
+    deliverables: ['src/modules 目录', '响应式 AppShell', '首页导航壳层', 'shared 样式继续拆分', '模块样式继续拆分'],
   },
 ]
