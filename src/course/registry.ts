@@ -17,6 +17,10 @@ export type CourseModuleId =
   | 'segment-diagram'
   | 'periodic'
   | 'kilogram'
+  | 'score-board'
+  | 'long-division'
+  | 'long-multiplication'
+  | 'vertical-fill'
 
 export type CoursePageConfig = {
   id: PageType
@@ -291,6 +295,70 @@ const builtInCourseModules: CourseModule[] = [
       { id: 'kilo-animation', label: '动画讲解', shortLabel: '动画' },
       { id: 'kilo-example', label: '例题解析', shortLabel: '例题' },
       { id: 'kilo-practice', label: '练习闯关', shortLabel: '练习' },
+    ],
+  },
+  {
+    id: 'score-board',
+    title: '巧算方法',
+    subtitle: '凑整、分组、去括号，让加减法更快。',
+    description: '用动画把“连加连减”的巧算思路讲清楚，学会快速计算与检验。',
+    category: '计算方法',
+    audience: '小学数学',
+    entryPage: 'score-intro',
+    pages: [
+      { id: 'score-intro', label: '概念引入', shortLabel: '引入' },
+      { id: 'score-rule', label: '核心方法', shortLabel: '方法' },
+      { id: 'score-animation', label: '动画讲解', shortLabel: '动画' },
+      { id: 'score-example', label: '例题解析', shortLabel: '例题' },
+      { id: 'score-practice', label: '练习闯关', shortLabel: '练习' },
+    ],
+  },
+  {
+    id: 'long-division',
+    title: '除法竖式',
+    subtitle: '商、乘、减、落，像走台阶一样算。',
+    description: '用动画演示竖式除法的每一步，包括商中间有 0 的情况与余数检验。',
+    category: '计算方法',
+    audience: '小学数学',
+    entryPage: 'div-intro',
+    pages: [
+      { id: 'div-intro', label: '概念引入', shortLabel: '引入' },
+      { id: 'div-rule', label: '核心步骤', shortLabel: '步骤' },
+      { id: 'div-animation', label: '动画讲解', shortLabel: '动画' },
+      { id: 'div-example', label: '例题解析', shortLabel: '例题' },
+      { id: 'div-practice', label: '练习闯关', shortLabel: '练习' },
+    ],
+  },
+  {
+    id: 'long-multiplication',
+    title: '乘法竖式',
+    subtitle: '对齐数位、先乘个位、再做进位。',
+    description: '用动画一步步演示乘法竖式，包括两位数乘两位数与末尾有 0 的乘法。',
+    category: '计算方法',
+    audience: '小学数学',
+    entryPage: 'mult-intro',
+    pages: [
+      { id: 'mult-intro', label: '概念引入', shortLabel: '引入' },
+      { id: 'mult-rule', label: '核心步骤', shortLabel: '步骤' },
+      { id: 'mult-animation', label: '动画讲解', shortLabel: '动画' },
+      { id: 'mult-example', label: '例题解析', shortLabel: '例题' },
+      { id: 'mult-practice', label: '练习闯关', shortLabel: '练习' },
+    ],
+  },
+  {
+    id: 'vertical-fill',
+    title: '竖式填数',
+    subtitle: '看清对齐和进位，缺的数字就能找出来。',
+    description: '用互动闯关的方式练习竖式加减填空，培养数位和进退位意识。',
+    category: '计算方法',
+    audience: '小学数学',
+    entryPage: 'fill-intro',
+    pages: [
+      { id: 'fill-intro', label: '概念引入', shortLabel: '引入' },
+      { id: 'fill-rule', label: '解题思路', shortLabel: '思路' },
+      { id: 'fill-animation', label: '动画讲解', shortLabel: '动画' },
+      { id: 'fill-example', label: '例题解析', shortLabel: '例题' },
+      { id: 'fill-practice', label: '练习闯关', shortLabel: '练习' },
     ],
   },
 ]

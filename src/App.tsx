@@ -1,5 +1,5 @@
 import { Home, Sparkles } from 'lucide-react'
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import './App.css'
 import type { BuiltinPageType, PageType } from './types'
@@ -85,6 +85,10 @@ import {
   SegmentPracticePage,
   SegmentRulePage,
 } from './modules/segment-diagram'
+import { ScoreAnimationPage, ScoreExamplePage, ScoreIntroPage, ScorePracticePage, ScoreRulePage } from './modules/score-board'
+import { DivAnimationPage, DivExamplePage, DivIntroPage, DivPracticePage, DivRulePage } from './modules/long-division'
+import { MultAnimationPage, MultExamplePage, MultIntroPage, MultPracticePage, MultRulePage } from './modules/long-multiplication'
+import { FillAnimationPage, FillExamplePage, FillIntroPage, FillPracticePage, FillRulePage } from './modules/vertical-fill'
 
 type PoetryScore = {
   score: number
@@ -94,18 +98,19 @@ type PoetryScore = {
 type LessonHeaderProps = {
   currentPage: PageType
   isMobile: boolean
+  containerRef: React.RefObject<HTMLElement | null>
   onHome: () => void
   onSelectPage: (page: PageType) => void
 }
 
-const LessonHeader = ({ currentPage, isMobile, onHome, onSelectPage }: LessonHeaderProps) => {
+const LessonHeader = ({ currentPage, isMobile, containerRef, onHome, onSelectPage }: LessonHeaderProps) => {
   const pageMeta = pageMetaMap[currentPage]
   if (!pageMeta) return null
 
   const module = courseModuleMap[pageMeta.moduleId]
 
   return (
-    <header className="lesson-shell">
+    <header ref={containerRef} className="lesson-shell">
       <div className="lesson-shell-top">
         <button className="lesson-shell-home" type="button" onClick={onHome}>
           <Home size={16} />
@@ -150,6 +155,7 @@ function App() {
   const isMobile = useIsMobile()
   const [currentPage, setCurrentPage] = useState<PageType>('home')
   const [poetryScore, setPoetryScore] = useState<PoetryScore>({ score: 0, total: 0 })
+  const lessonHeaderRef = useRef<HTMLElement | null>(null)
 
   const goTo = (page: PageType) => setCurrentPage(page)
   const goHome = () => setCurrentPage('home')
@@ -161,6 +167,29 @@ function App() {
   const pageMeta = pageMetaMap[currentPage]
   const currentModule = pageMeta ? courseModuleMap[pageMeta.moduleId] : null
   const progressPages = currentModule?.pages ?? []
+
+  useLayoutEffect(() => {
+    const el = lessonHeaderRef.current
+    if (!currentModule || !el) {
+      document.documentElement.style.removeProperty('--lesson-shell-bottom')
+      return
+    }
+
+    const update = () => {
+      const rect = el.getBoundingClientRect()
+      document.documentElement.style.setProperty('--lesson-shell-bottom', `${Math.ceil(rect.bottom)}px`)
+    }
+
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    window.addEventListener('resize', update)
+
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', update)
+    }
+  }, [currentModule, currentPage])
 
   const builtInRenderers: Partial<Record<BuiltinPageType, () => ReactNode>> = {
     home: () => <HomePage modules={courseModules} onSelect={goTo} />,
@@ -252,6 +281,26 @@ function App() {
     'kilo-animation': () => <KiloAnimationPage onNext={() => goTo('kilo-example')} onBack={goHome} />,
     'kilo-example': () => <KiloExamplePage onNext={() => goTo('kilo-practice')} onBack={goHome} />,
     'kilo-practice': () => <KiloPracticePage onBack={goHome} onHome={goHome} />,
+    'score-intro': () => <ScoreIntroPage onNext={() => goTo('score-rule')} onBack={goHome} />,
+    'score-rule': () => <ScoreRulePage onNext={() => goTo('score-animation')} onBack={goHome} />,
+    'score-animation': () => <ScoreAnimationPage onNext={() => goTo('score-example')} onBack={goHome} />,
+    'score-example': () => <ScoreExamplePage onNext={() => goTo('score-practice')} onBack={goHome} />,
+    'score-practice': () => <ScorePracticePage onBack={goHome} onHome={goHome} />,
+    'div-intro': () => <DivIntroPage onNext={() => goTo('div-rule')} onBack={goHome} />,
+    'div-rule': () => <DivRulePage onNext={() => goTo('div-animation')} onBack={goHome} />,
+    'div-animation': () => <DivAnimationPage onNext={() => goTo('div-example')} onBack={goHome} />,
+    'div-example': () => <DivExamplePage onNext={() => goTo('div-practice')} onBack={goHome} />,
+    'div-practice': () => <DivPracticePage onBack={goHome} onHome={goHome} />,
+    'mult-intro': () => <MultIntroPage onNext={() => goTo('mult-rule')} onBack={goHome} />,
+    'mult-rule': () => <MultRulePage onNext={() => goTo('mult-animation')} onBack={goHome} />,
+    'mult-animation': () => <MultAnimationPage onNext={() => goTo('mult-example')} onBack={goHome} />,
+    'mult-example': () => <MultExamplePage onNext={() => goTo('mult-practice')} onBack={goHome} />,
+    'mult-practice': () => <MultPracticePage onBack={goHome} onHome={goHome} />,
+    'fill-intro': () => <FillIntroPage onNext={() => goTo('fill-rule')} onBack={goHome} />,
+    'fill-rule': () => <FillRulePage onNext={() => goTo('fill-animation')} onBack={goHome} />,
+    'fill-animation': () => <FillAnimationPage onNext={() => goTo('fill-example')} onBack={goHome} />,
+    'fill-example': () => <FillExamplePage onNext={() => goTo('fill-practice')} onBack={goHome} />,
+    'fill-practice': () => <FillPracticePage onBack={goHome} onHome={goHome} />,
   }
 
   const renderCurrentPage = () => {
@@ -276,7 +325,13 @@ function App() {
       <div className="app-shell__glow app-shell__glow--secondary" />
 
       {currentModule ? (
-        <LessonHeader currentPage={currentPage} isMobile={isMobile} onHome={goHome} onSelectPage={goTo} />
+        <LessonHeader
+          currentPage={currentPage}
+          isMobile={isMobile}
+          containerRef={lessonHeaderRef}
+          onHome={goHome}
+          onSelectPage={goTo}
+        />
       ) : null}
 
       <main className={`app ${currentPage === 'home' ? 'app-home' : 'app-lesson'}`}>{renderCurrentPage()}</main>

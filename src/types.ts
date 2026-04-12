@@ -17,5 +17,9 @@ export type BuiltinPageType =
   | 'segment-intro' | 'segment-rule' | 'segment-animation' | 'segment-example' | 'segment-practice' // 线段图解题
   | 'period-intro' | 'period-rule' | 'period-animation' | 'period-example' | 'period-practice' // 周期问题
   | 'kilo-intro' | 'kilo-rule' | 'kilo-animation' | 'kilo-example' | 'kilo-practice' // 千克与克
+  | 'score-intro' | 'score-rule' | 'score-animation' | 'score-example' | 'score-practice' // 巧算方法
+  | 'div-intro' | 'div-rule' | 'div-animation' | 'div-example' | 'div-practice' // 除法竖式
+  | 'mult-intro' | 'mult-rule' | 'mult-animation' | 'mult-example' | 'mult-practice' // 乘法竖式
+  | 'fill-intro' | 'fill-rule' | 'fill-animation' | 'fill-example' | 'fill-practice' // 竖式填数
 
 export type PageType = BuiltinPageType

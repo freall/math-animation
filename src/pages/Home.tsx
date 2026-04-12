@@ -7,6 +7,8 @@ import {
   Gamepad2,
   Lightbulb,
   MonitorSmartphone,
+  Pencil,
+  Plus,
   Rabbit,
   RefreshCcw,
   Repeat,
@@ -18,6 +20,7 @@ import {
   Target,
   TreePine,
   Trophy,
+  X,
 } from 'lucide-react'
 import type { PageType } from '../types'
 import type { CourseModule, CourseModuleId } from '../course/registry'
@@ -40,6 +43,10 @@ const moduleIcons: Partial<Record<CourseModuleId, typeof Target>> = {
   'segment-diagram': Ruler,
   periodic: RefreshCcw,
   kilogram: Scale,
+  'score-board': Plus,
+  'long-division': Divide,
+  'long-multiplication': X,
+  'vertical-fill': Pencil,
 }
 
 type HomePageProps = {
