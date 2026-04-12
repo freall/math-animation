@@ -9,6 +9,9 @@ export type CourseModuleId =
   | 'sorting'
   | 'loop-commander'
   | 'poetry'
+  | 'planting'
+  | 'shape-matching'
+  | 'induction'
 
 export type CoursePageConfig = {
   id: PageType
@@ -155,6 +158,54 @@ const builtInCourseModules: CourseModule[] = [
       { id: 'poetry-intro', label: '活动介绍', shortLabel: '介绍' },
       { id: 'poetry-quiz', label: '答题挑战', shortLabel: '答题' },
       { id: 'poetry-result', label: '结果反馈', shortLabel: '结果' },
+    ],
+  },
+  {
+    id: 'planting',
+    title: '植树问题',
+    subtitle: '先数间隔，再看端点，轻松搞定棵数。',
+    description: '用动画把“间隔数”和“棵数”的关系讲清楚，含环形与端点变化。',
+    category: '应用题模型',
+    audience: '小学奥数',
+    entryPage: 'planting-intro',
+    pages: [
+      { id: 'planting-intro', label: '概念引入', shortLabel: '引入' },
+      { id: 'planting-rule', label: '核心规则', shortLabel: '规则' },
+      { id: 'planting-animation', label: '动画讲解', shortLabel: '动画' },
+      { id: 'planting-example', label: '例题解析', shortLabel: '例题' },
+      { id: 'planting-practice', label: '练习闯关', shortLabel: '练习' },
+    ],
+  },
+  {
+    id: 'shape-matching',
+    title: '搭配图形',
+    subtitle: '把立体拆成小柱子，一根根数清楚。',
+    description: '用小方块搭积木，学会从“高度表”快速数出方块总数。',
+    category: '空间想象',
+    audience: '数学思维',
+    entryPage: 'shape-intro',
+    pages: [
+      { id: 'shape-intro', label: '概念引入', shortLabel: '引入' },
+      { id: 'shape-rule', label: '核心规则', shortLabel: '规则' },
+      { id: 'shape-animation', label: '动画讲解', shortLabel: '动画' },
+      { id: 'shape-example', label: '例题解析', shortLabel: '例题' },
+      { id: 'shape-practice', label: '练习闯关', shortLabel: '练习' },
+    ],
+  },
+  {
+    id: 'induction',
+    title: '归纳解题',
+    subtitle: '找循环，用余数，快速定位答案。',
+    description: '用动画学会找规律：先列、再看、找循环、用余数。',
+    category: '找规律',
+    audience: '奥数思维',
+    entryPage: 'induction-intro',
+    pages: [
+      { id: 'induction-intro', label: '概念引入', shortLabel: '引入' },
+      { id: 'induction-rule', label: '核心步骤', shortLabel: '步骤' },
+      { id: 'induction-animation', label: '动画讲解', shortLabel: '动画' },
+      { id: 'induction-example', label: '例题解析', shortLabel: '例题' },
+      { id: 'induction-practice', label: '练习闯关', shortLabel: '练习' },
     ],
   },
 ]

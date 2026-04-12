@@ -1,7 +1,9 @@
 import {
   ArrowUpDown,
+  Blocks,
   ChevronRight,
   Gamepad2,
+  Lightbulb,
   MonitorSmartphone,
   Rabbit,
   Repeat,
@@ -9,6 +11,7 @@ import {
   ScrollText,
   Sparkles,
   Target,
+  TreePine,
   Trophy,
 } from 'lucide-react'
 import type { PageType } from '../types'
@@ -24,6 +27,9 @@ const moduleIcons: Partial<Record<CourseModuleId, typeof Target>> = {
   sorting: ArrowUpDown,
   'loop-commander': Gamepad2,
   poetry: ScrollText,
+  planting: TreePine,
+  'shape-matching': Blocks,
+  induction: Lightbulb,
 }
 
 type HomePageProps = {

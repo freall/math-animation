@@ -9,5 +9,8 @@ export type BuiltinPageType =
   | 'sort-intro' | 'sort-algos' | 'sort-visual' | 'sort-example' | 'sort-practice'
   | 'cmd-intro' | 'cmd-break' | 'cmd-continue' | 'cmd-compare' | 'cmd-practice' // 循环指挥官
   | 'poetry-intro' | 'poetry-quiz' | 'poetry-result' // 诗词大赛
+  | 'planting-intro' | 'planting-rule' | 'planting-animation' | 'planting-example' | 'planting-practice' // 植树问题
+  | 'shape-intro' | 'shape-rule' | 'shape-animation' | 'shape-example' | 'shape-practice' // 搭配图形
+  | 'induction-intro' | 'induction-rule' | 'induction-animation' | 'induction-example' | 'induction-practice' // 归纳解题
 
 export type PageType = BuiltinPageType

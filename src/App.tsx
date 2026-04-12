@@ -53,6 +53,21 @@ import {
 } from './modules/sorting'
 import { CmdBreakPage, CmdComparePage, CmdContinuePage, CmdIntroPage, CmdPracticePage } from './modules/loop-commander'
 import { PoetryIntroPage, PoetryQuizPage, PoetryResultPage } from './modules/poetry'
+import {
+  PlantingAnimationPage,
+  PlantingExamplePage,
+  PlantingIntroPage,
+  PlantingPracticePage,
+  PlantingRulePage,
+} from './modules/planting'
+import { ShapeAnimationPage, ShapeExamplePage, ShapeIntroPage, ShapePracticePage, ShapeRulePage } from './modules/shape-matching'
+import {
+  InductionAnimationPage,
+  InductionExamplePage,
+  InductionIntroPage,
+  InductionPracticePage,
+  InductionRulePage,
+} from './modules/induction'
 
 type PoetryScore = {
   score: number
@@ -180,6 +195,21 @@ function App() {
         onHome={goHome}
       />
     ),
+    'planting-intro': () => <PlantingIntroPage onNext={() => goTo('planting-rule')} onBack={goHome} />,
+    'planting-rule': () => <PlantingRulePage onNext={() => goTo('planting-animation')} onBack={goHome} />,
+    'planting-animation': () => <PlantingAnimationPage onNext={() => goTo('planting-example')} onBack={goHome} />,
+    'planting-example': () => <PlantingExamplePage onNext={() => goTo('planting-practice')} onBack={goHome} />,
+    'planting-practice': () => <PlantingPracticePage onBack={goHome} onHome={goHome} />,
+    'shape-intro': () => <ShapeIntroPage onNext={() => goTo('shape-rule')} onBack={goHome} />,
+    'shape-rule': () => <ShapeRulePage onNext={() => goTo('shape-animation')} onBack={goHome} />,
+    'shape-animation': () => <ShapeAnimationPage onNext={() => goTo('shape-example')} onBack={goHome} />,
+    'shape-example': () => <ShapeExamplePage onNext={() => goTo('shape-practice')} onBack={goHome} />,
+    'shape-practice': () => <ShapePracticePage onBack={goHome} onHome={goHome} />,
+    'induction-intro': () => <InductionIntroPage onNext={() => goTo('induction-rule')} onBack={goHome} />,
+    'induction-rule': () => <InductionRulePage onNext={() => goTo('induction-animation')} onBack={goHome} />,
+    'induction-animation': () => <InductionAnimationPage onNext={() => goTo('induction-example')} onBack={goHome} />,
+    'induction-example': () => <InductionExamplePage onNext={() => goTo('induction-practice')} onBack={goHome} />,
+    'induction-practice': () => <InductionPracticePage onBack={goHome} onHome={goHome} />,
   }
 
   const renderCurrentPage = () => {
