@@ -106,6 +106,16 @@
 - 支持数字键盘点选填空并即时反馈
 - 含答对庆祝动画
 
+### 21. 等量代换
+- 用动画讲清“相等就能互换”的替身思想
+- 支持一步步代换、合并、得到答案
+- 含闯关练习与答对庆祝动画
+
+### 22. 三视图
+- 用积木模型讲清上视图、正视图、左视图怎么画
+- 三视图与积木对应关系可交互切换观察
+- 含点格子闯关练习与答对庆祝动画
+
 ## 教学设计要求
 
 - 内容表达适合小朋友阅读
@@ -168,6 +178,7 @@ src/
 │   ├── inclusion/
 │   ├── induction/
 │   ├── kilogram/
+│   ├── equal-substitution/
 │   ├── long-division/
 │   ├── long-multiplication/
 │   ├── loop-commander/
@@ -182,6 +193,7 @@ src/
 │   ├── shortest-path/
 │   ├── sorting/
 │   ├── sports/
+│   ├── three-views/
 │   └── vertical-fill/
 ├── pages/
 │   └── Home.tsx

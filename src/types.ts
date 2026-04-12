@@ -21,5 +21,7 @@ export type BuiltinPageType =
   | 'div-intro' | 'div-rule' | 'div-animation' | 'div-example' | 'div-practice' // 除法竖式
   | 'mult-intro' | 'mult-rule' | 'mult-animation' | 'mult-example' | 'mult-practice' // 乘法竖式
   | 'fill-intro' | 'fill-rule' | 'fill-animation' | 'fill-example' | 'fill-practice' // 竖式填数
+  | 'eq-intro' | 'eq-rule' | 'eq-animation' | 'eq-example' | 'eq-practice' // 等量代换
+  | 'view-intro' | 'view-rule' | 'view-animation' | 'view-example' | 'view-practice' // 三视图
 
 export type PageType = BuiltinPageType

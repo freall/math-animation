@@ -89,6 +89,8 @@ import { ScoreAnimationPage, ScoreExamplePage, ScoreIntroPage, ScorePracticePage
 import { DivAnimationPage, DivExamplePage, DivIntroPage, DivPracticePage, DivRulePage } from './modules/long-division'
 import { MultAnimationPage, MultExamplePage, MultIntroPage, MultPracticePage, MultRulePage } from './modules/long-multiplication'
 import { FillAnimationPage, FillExamplePage, FillIntroPage, FillPracticePage, FillRulePage } from './modules/vertical-fill'
+import { EqAnimationPage, EqExamplePage, EqIntroPage, EqPracticePage, EqRulePage } from './modules/equal-substitution'
+import { ViewAnimationPage, ViewExamplePage, ViewIntroPage, ViewPracticePage, ViewRulePage } from './modules/three-views'
 
 type PoetryScore = {
   score: number
@@ -306,6 +308,16 @@ function App() {
     'fill-animation': () => <FillAnimationPage onNext={() => goTo('fill-example')} onBack={goHome} />,
     'fill-example': () => <FillExamplePage onNext={() => goTo('fill-practice')} onBack={goHome} />,
     'fill-practice': () => <FillPracticePage onBack={goHome} onHome={goHome} />,
+    'eq-intro': () => <EqIntroPage onNext={() => goTo('eq-rule')} onBack={goHome} />,
+    'eq-rule': () => <EqRulePage onNext={() => goTo('eq-animation')} onBack={goHome} />,
+    'eq-animation': () => <EqAnimationPage onNext={() => goTo('eq-example')} onBack={goHome} />,
+    'eq-example': () => <EqExamplePage onNext={() => goTo('eq-practice')} onBack={goHome} />,
+    'eq-practice': () => <EqPracticePage onBack={goHome} onHome={goHome} />,
+    'view-intro': () => <ViewIntroPage onNext={() => goTo('view-rule')} onBack={goHome} />,
+    'view-rule': () => <ViewRulePage onNext={() => goTo('view-animation')} onBack={goHome} />,
+    'view-animation': () => <ViewAnimationPage onNext={() => goTo('view-example')} onBack={goHome} />,
+    'view-example': () => <ViewExamplePage onNext={() => goTo('view-practice')} onBack={goHome} />,
+    'view-practice': () => <ViewPracticePage onBack={goHome} onHome={goHome} />,
   }
 
   const renderCurrentPage = () => {

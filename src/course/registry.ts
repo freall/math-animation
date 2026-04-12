@@ -21,6 +21,8 @@ export type CourseModuleId =
   | 'long-division'
   | 'long-multiplication'
   | 'vertical-fill'
+  | 'equal-substitution'
+  | 'three-views'
 
 export type CoursePageConfig = {
   id: PageType
@@ -359,6 +361,38 @@ const builtInCourseModules: CourseModule[] = [
       { id: 'fill-animation', label: '动画讲解', shortLabel: '动画' },
       { id: 'fill-example', label: '例题解析', shortLabel: '例题' },
       { id: 'fill-practice', label: '练习闯关', shortLabel: '练习' },
+    ],
+  },
+  {
+    id: 'equal-substitution',
+    title: '等量代换',
+    subtitle: '把“相等”当成替身，式子就变简单。',
+    description: '用动画学会等量代换：找到等量关系，把难的换成简单的，再合并计算。',
+    category: '等量关系',
+    audience: '小学奥数',
+    entryPage: 'eq-intro',
+    pages: [
+      { id: 'eq-intro', label: '概念引入', shortLabel: '引入' },
+      { id: 'eq-rule', label: '核心规则', shortLabel: '规则' },
+      { id: 'eq-animation', label: '动画讲解', shortLabel: '动画' },
+      { id: 'eq-example', label: '例题解析', shortLabel: '例题' },
+      { id: 'eq-practice', label: '练习闯关', shortLabel: '练习' },
+    ],
+  },
+  {
+    id: 'three-views',
+    title: '三视图',
+    subtitle: '从上、从前、从左，给积木拍三张照片。',
+    description: '用立体积木动画理解上视图、正视图、左视图怎么画，并做点格子闯关练习。',
+    category: '空间想象',
+    audience: '数学思维',
+    entryPage: 'view-intro',
+    pages: [
+      { id: 'view-intro', label: '概念引入', shortLabel: '引入' },
+      { id: 'view-rule', label: '核心规则', shortLabel: '规则' },
+      { id: 'view-animation', label: '动画讲解', shortLabel: '动画' },
+      { id: 'view-example', label: '例题解析', shortLabel: '例题' },
+      { id: 'view-practice', label: '练习闯关', shortLabel: '练习' },
     ],
   },
 ]

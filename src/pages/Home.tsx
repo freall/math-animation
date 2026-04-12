@@ -1,9 +1,11 @@
 import {
+  ArrowLeftRight,
   ArrowUpDown,
   Blocks,
   Calculator,
   ChevronRight,
   Divide,
+  Eye,
   Gamepad2,
   Lightbulb,
   MonitorSmartphone,
@@ -47,6 +49,8 @@ const moduleIcons: Partial<Record<CourseModuleId, typeof Target>> = {
   'long-division': Divide,
   'long-multiplication': X,
   'vertical-fill': Pencil,
+  'equal-substitution': ArrowLeftRight,
+  'three-views': Eye,
 }
 
 type HomePageProps = {
