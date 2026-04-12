@@ -12,6 +12,11 @@ export type CourseModuleId =
   | 'planting'
   | 'shape-matching'
   | 'induction'
+  | 'mul-tricks'
+  | 'fractions'
+  | 'segment-diagram'
+  | 'periodic'
+  | 'kilogram'
 
 export type CoursePageConfig = {
   id: PageType
@@ -206,6 +211,86 @@ const builtInCourseModules: CourseModule[] = [
       { id: 'induction-animation', label: '动画讲解', shortLabel: '动画' },
       { id: 'induction-example', label: '例题解析', shortLabel: '例题' },
       { id: 'induction-practice', label: '练习闯关', shortLabel: '练习' },
+    ],
+  },
+  {
+    id: 'mul-tricks',
+    title: '乘法巧算',
+    subtitle: '凑整、拆分、提公因式，让乘法更快。',
+    description: '用动画把乘法分配律、结合律讲清楚，学会快速心算。',
+    category: '计算方法',
+    audience: '小学奥数',
+    entryPage: 'mul-intro',
+    pages: [
+      { id: 'mul-intro', label: '概念引入', shortLabel: '引入' },
+      { id: 'mul-rule', label: '核心方法', shortLabel: '方法' },
+      { id: 'mul-animation', label: '动画讲解', shortLabel: '动画' },
+      { id: 'mul-example', label: '例题解析', shortLabel: '例题' },
+      { id: 'mul-practice', label: '练习闯关', shortLabel: '练习' },
+    ],
+  },
+  {
+    id: 'fractions',
+    title: '分数基础',
+    subtitle: '分子分母、约分通分、比较大小，一步学会。',
+    description: '用图形化把分数意义讲清楚，并用通分/同分母比较分数大小。',
+    category: '分数',
+    audience: '小学数学',
+    entryPage: 'fraction-intro',
+    pages: [
+      { id: 'fraction-intro', label: '概念引入', shortLabel: '引入' },
+      { id: 'fraction-rule', label: '核心规则', shortLabel: '规则' },
+      { id: 'fraction-animation', label: '动画讲解', shortLabel: '动画' },
+      { id: 'fraction-example', label: '例题解析', shortLabel: '例题' },
+      { id: 'fraction-practice', label: '练习闯关', shortLabel: '练习' },
+    ],
+  },
+  {
+    id: 'segment-diagram',
+    title: '线段图解题',
+    subtitle: '把数量关系画出来，答案自然出现。',
+    description: '用线段图把“和、差、倍”关系讲清楚，学会列式求解。',
+    category: '应用题模型',
+    audience: '小学奥数',
+    entryPage: 'segment-intro',
+    pages: [
+      { id: 'segment-intro', label: '概念引入', shortLabel: '引入' },
+      { id: 'segment-rule', label: '画图步骤', shortLabel: '步骤' },
+      { id: 'segment-animation', label: '动画讲解', shortLabel: '动画' },
+      { id: 'segment-example', label: '例题解析', shortLabel: '例题' },
+      { id: 'segment-practice', label: '练习闯关', shortLabel: '练习' },
+    ],
+  },
+  {
+    id: 'periodic',
+    title: '周期问题',
+    subtitle: '找循环，用余数，快速定位第 n 次。',
+    description: '把周期规律做成动画：先找循环长度，再用取余锁定答案。',
+    category: '找规律',
+    audience: '数学思维',
+    entryPage: 'period-intro',
+    pages: [
+      { id: 'period-intro', label: '概念引入', shortLabel: '引入' },
+      { id: 'period-rule', label: '核心方法', shortLabel: '方法' },
+      { id: 'period-animation', label: '动画讲解', shortLabel: '动画' },
+      { id: 'period-example', label: '例题解析', shortLabel: '例题' },
+      { id: 'period-practice', label: '练习闯关', shortLabel: '练习' },
+    ],
+  },
+  {
+    id: 'kilogram',
+    title: '千克与克',
+    subtitle: '认识重量单位，学会换算与计算。',
+    description: '用称重动画讲清楚 1 千克 = 1000 克，并做换算与应用题练习。',
+    category: '计量单位',
+    audience: '小学数学',
+    entryPage: 'kilo-intro',
+    pages: [
+      { id: 'kilo-intro', label: '概念引入', shortLabel: '引入' },
+      { id: 'kilo-rule', label: '核心规则', shortLabel: '规则' },
+      { id: 'kilo-animation', label: '动画讲解', shortLabel: '动画' },
+      { id: 'kilo-example', label: '例题解析', shortLabel: '例题' },
+      { id: 'kilo-practice', label: '练习闯关', shortLabel: '练习' },
     ],
   },
 ]

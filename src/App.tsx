@@ -68,6 +68,23 @@ import {
   InductionPracticePage,
   InductionRulePage,
 } from './modules/induction'
+import { FractionAnimationPage, FractionExamplePage, FractionIntroPage, FractionPracticePage, FractionRulePage } from './modules/fractions'
+import { KiloAnimationPage, KiloExamplePage, KiloIntroPage, KiloPracticePage, KiloRulePage } from './modules/kilogram'
+import { MulAnimationPage, MulExamplePage, MulIntroPage, MulPracticePage, MulRulePage } from './modules/mul-tricks'
+import {
+  PeriodAnimationPage,
+  PeriodExamplePage,
+  PeriodIntroPage,
+  PeriodPracticePage,
+  PeriodRulePage,
+} from './modules/periodic'
+import {
+  SegmentAnimationPage,
+  SegmentExamplePage,
+  SegmentIntroPage,
+  SegmentPracticePage,
+  SegmentRulePage,
+} from './modules/segment-diagram'
 
 type PoetryScore = {
   score: number
@@ -210,6 +227,31 @@ function App() {
     'induction-animation': () => <InductionAnimationPage onNext={() => goTo('induction-example')} onBack={goHome} />,
     'induction-example': () => <InductionExamplePage onNext={() => goTo('induction-practice')} onBack={goHome} />,
     'induction-practice': () => <InductionPracticePage onBack={goHome} onHome={goHome} />,
+    'mul-intro': () => <MulIntroPage onNext={() => goTo('mul-rule')} onBack={goHome} />,
+    'mul-rule': () => <MulRulePage onNext={() => goTo('mul-animation')} onBack={goHome} />,
+    'mul-animation': () => <MulAnimationPage onNext={() => goTo('mul-example')} onBack={goHome} />,
+    'mul-example': () => <MulExamplePage onNext={() => goTo('mul-practice')} onBack={goHome} />,
+    'mul-practice': () => <MulPracticePage onBack={goHome} onHome={goHome} />,
+    'fraction-intro': () => <FractionIntroPage onNext={() => goTo('fraction-rule')} onBack={goHome} />,
+    'fraction-rule': () => <FractionRulePage onNext={() => goTo('fraction-animation')} onBack={goHome} />,
+    'fraction-animation': () => <FractionAnimationPage onNext={() => goTo('fraction-example')} onBack={goHome} />,
+    'fraction-example': () => <FractionExamplePage onNext={() => goTo('fraction-practice')} onBack={goHome} />,
+    'fraction-practice': () => <FractionPracticePage onBack={goHome} onHome={goHome} />,
+    'segment-intro': () => <SegmentIntroPage onNext={() => goTo('segment-rule')} onBack={goHome} />,
+    'segment-rule': () => <SegmentRulePage onNext={() => goTo('segment-animation')} onBack={goHome} />,
+    'segment-animation': () => <SegmentAnimationPage onNext={() => goTo('segment-example')} onBack={goHome} />,
+    'segment-example': () => <SegmentExamplePage onNext={() => goTo('segment-practice')} onBack={goHome} />,
+    'segment-practice': () => <SegmentPracticePage onBack={goHome} onHome={goHome} />,
+    'period-intro': () => <PeriodIntroPage onNext={() => goTo('period-rule')} onBack={goHome} />,
+    'period-rule': () => <PeriodRulePage onNext={() => goTo('period-animation')} onBack={goHome} />,
+    'period-animation': () => <PeriodAnimationPage onNext={() => goTo('period-example')} onBack={goHome} />,
+    'period-example': () => <PeriodExamplePage onNext={() => goTo('period-practice')} onBack={goHome} />,
+    'period-practice': () => <PeriodPracticePage onBack={goHome} onHome={goHome} />,
+    'kilo-intro': () => <KiloIntroPage onNext={() => goTo('kilo-rule')} onBack={goHome} />,
+    'kilo-rule': () => <KiloRulePage onNext={() => goTo('kilo-animation')} onBack={goHome} />,
+    'kilo-animation': () => <KiloAnimationPage onNext={() => goTo('kilo-example')} onBack={goHome} />,
+    'kilo-example': () => <KiloExamplePage onNext={() => goTo('kilo-practice')} onBack={goHome} />,
+    'kilo-practice': () => <KiloPracticePage onBack={goHome} onHome={goHome} />,
   }
 
   const renderCurrentPage = () => {

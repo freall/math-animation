@@ -1,13 +1,18 @@
 import {
   ArrowUpDown,
   Blocks,
+  Calculator,
   ChevronRight,
+  Divide,
   Gamepad2,
   Lightbulb,
   MonitorSmartphone,
   Rabbit,
+  RefreshCcw,
   Repeat,
   Route,
+  Ruler,
+  Scale,
   ScrollText,
   Sparkles,
   Target,
@@ -30,6 +35,11 @@ const moduleIcons: Partial<Record<CourseModuleId, typeof Target>> = {
   planting: TreePine,
   'shape-matching': Blocks,
   induction: Lightbulb,
+  'mul-tricks': Calculator,
+  fractions: Divide,
+  'segment-diagram': Ruler,
+  periodic: RefreshCcw,
+  kilogram: Scale,
 }
 
 type HomePageProps = {

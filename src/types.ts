@@ -12,5 +12,10 @@ export type BuiltinPageType =
   | 'planting-intro' | 'planting-rule' | 'planting-animation' | 'planting-example' | 'planting-practice' // 植树问题
   | 'shape-intro' | 'shape-rule' | 'shape-animation' | 'shape-example' | 'shape-practice' // 搭配图形
   | 'induction-intro' | 'induction-rule' | 'induction-animation' | 'induction-example' | 'induction-practice' // 归纳解题
+  | 'mul-intro' | 'mul-rule' | 'mul-animation' | 'mul-example' | 'mul-practice' // 乘法巧算
+  | 'fraction-intro' | 'fraction-rule' | 'fraction-animation' | 'fraction-example' | 'fraction-practice' // 分数基础
+  | 'segment-intro' | 'segment-rule' | 'segment-animation' | 'segment-example' | 'segment-practice' // 线段图解题
+  | 'period-intro' | 'period-rule' | 'period-animation' | 'period-example' | 'period-practice' // 周期问题
+  | 'kilo-intro' | 'kilo-rule' | 'kilo-animation' | 'kilo-example' | 'kilo-practice' // 千克与克
 
 export type PageType = BuiltinPageType
