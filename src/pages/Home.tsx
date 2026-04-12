@@ -15,7 +15,7 @@ import type { PageType } from '../types'
 import type { CourseModule, CourseModuleId } from '../course/registry'
 import { FadeIn } from '../components/animations'
 
-const moduleIcons: Record<CourseModuleId, typeof Target> = {
+const moduleIcons: Partial<Record<CourseModuleId, typeof Target>> = {
   inclusion: Target,
   'shortest-path': Route,
   sports: Trophy,
@@ -129,7 +129,7 @@ const HomePage = ({ modules, onSelect }: HomePageProps) => {
 
           <div className="topic-cards" id="course-grid">
             {modules.map((module) => {
-              const Icon = moduleIcons[module.id]
+              const Icon = moduleIcons[module.id] ?? Target
 
               return (
                 <button key={module.id} className="topic-card" type="button" onClick={() => onSelect(module.entryPage)}>

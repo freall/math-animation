@@ -2,7 +2,7 @@ import { Home, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import './App.css'
-import type { PageType } from './types'
+import type { BuiltinPageType, PageType } from './types'
 import { courseModuleMap, courseModules, pageMetaMap } from './course/registry'
 import { useIsMobile } from './hooks/use-mobile'
 import HomePage from './pages/Home'
@@ -130,7 +130,7 @@ function App() {
   const currentModule = pageMeta ? courseModuleMap[pageMeta.moduleId] : null
   const progressPages = currentModule?.pages ?? []
 
-  const renderers = {
+  const builtInRenderers: Partial<Record<BuiltinPageType, () => ReactNode>> = {
     home: () => <HomePage modules={courseModules} onSelect={goTo} />,
     intro: () => <InclusionIntroPage onNext={() => goTo('venn')} onBack={goHome} />,
     venn: () => <VennPage onNext={() => goTo('two-set')} onBack={goHome} />,
@@ -180,7 +180,23 @@ function App() {
         onHome={goHome}
       />
     ),
-  } satisfies Record<PageType, () => ReactNode>
+  }
+
+  const renderCurrentPage = () => {
+    const renderer = builtInRenderers[currentPage as BuiltinPageType]
+    if (!renderer) {
+      return (
+        <div className="page">
+          <h2 className="page-title">页面不存在</h2>
+          <button className="start-btn" type="button" onClick={goHome}>
+            返回首页
+          </button>
+        </div>
+      )
+    }
+
+    return renderer()
+  }
 
   return (
     <div className="app-shell">
@@ -191,7 +207,7 @@ function App() {
         <LessonHeader currentPage={currentPage} isMobile={isMobile} onHome={goHome} onSelectPage={goTo} />
       ) : null}
 
-      <main className={`app ${currentPage === 'home' ? 'app-home' : 'app-lesson'}`}>{renderers[currentPage]()}</main>
+      <main className={`app ${currentPage === 'home' ? 'app-home' : 'app-lesson'}`}>{renderCurrentPage()}</main>
 
       {currentModule ? (
         <div className="progress-bar">

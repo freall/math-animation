@@ -27,7 +27,7 @@ export type CourseModule = {
   pages: CoursePageConfig[]
 }
 
-export const courseModules: CourseModule[] = [
+const builtInCourseModules: CourseModule[] = [
   {
     id: 'inclusion',
     title: '容斥原理',
@@ -158,6 +158,7 @@ export const courseModules: CourseModule[] = [
     ],
   },
 ]
+export const courseModules: CourseModule[] = [...builtInCourseModules]
 
 export const courseModuleMap = Object.fromEntries(courseModules.map((module) => [module.id, module])) as Record<
   CourseModuleId,
