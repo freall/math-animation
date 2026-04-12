@@ -86,6 +86,26 @@
 - 支持交互输入左右重量并比较
 - 含闯关练习与答对庆祝动画
 
+### 17. 巧算方法
+- 用动画讲清凑整、分组、去括号等连加连减巧算
+- 支持输入一串数字并自动演示凑整配对过程
+- 含闯关练习与答对庆祝动画
+
+### 18. 除法竖式
+- 用动画讲清“商乘减落”竖式节奏
+- 支持交互输入被除数与除数并观看逐步演示
+- 含闯关练习与答对庆祝动画
+
+### 19. 乘法竖式
+- 用动画讲清对齐、进位与部分积相加
+- 支持交互输入两数并观看逐步演示
+- 含闯关练习与答对庆祝动画
+
+### 20. 竖式填数
+- 用互动填空方式训练竖式进位/退位意识
+- 支持数字键盘点选填空并即时反馈
+- 含答对庆祝动画
+
 ## 教学设计要求
 
 - 内容表达适合小朋友阅读
@@ -148,17 +168,21 @@ src/
 │   ├── inclusion/
 │   ├── induction/
 │   ├── kilogram/
+│   ├── long-division/
+│   ├── long-multiplication/
 │   ├── loop-commander/
 │   ├── loop-intro/
 │   ├── mul-tricks/
 │   ├── periodic/
 │   ├── planting/
 │   ├── poetry/
+│   ├── score-board/
 │   ├── segment-diagram/
 │   ├── shape-matching/
 │   ├── shortest-path/
 │   ├── sorting/
-│   └── sports/
+│   ├── sports/
+│   └── vertical-fill/
 ├── pages/
 │   └── Home.tsx
 ├── App.tsx

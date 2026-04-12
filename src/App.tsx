@@ -169,6 +169,11 @@ function App() {
   const progressPages = currentModule?.pages ?? []
 
   useLayoutEffect(() => {
+    if (isMobile) {
+      document.documentElement.style.removeProperty('--lesson-shell-bottom')
+      return
+    }
+
     const el = lessonHeaderRef.current
     if (!currentModule || !el) {
       document.documentElement.style.removeProperty('--lesson-shell-bottom')
@@ -189,7 +194,7 @@ function App() {
       ro.disconnect()
       window.removeEventListener('resize', update)
     }
-  }, [currentModule, currentPage])
+  }, [currentModule, currentPage, isMobile])
 
   const builtInRenderers: Partial<Record<BuiltinPageType, () => ReactNode>> = {
     home: () => <HomePage modules={courseModules} onSelect={goTo} />,
@@ -324,7 +329,7 @@ function App() {
       <div className="app-shell__glow app-shell__glow--primary" />
       <div className="app-shell__glow app-shell__glow--secondary" />
 
-      {currentModule ? (
+      {currentModule && !isMobile ? (
         <LessonHeader
           currentPage={currentPage}
           isMobile={isMobile}

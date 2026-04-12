@@ -3648,6 +3648,10 @@ select {
   z-index: 1;
 }
 
+.app.app-lesson {
+  padding-top: calc(var(--lesson-shell-bottom, 0px) + 28px);
+}
+
 .app.app-home {
   align-items: flex-start;
   padding-top: 0;
